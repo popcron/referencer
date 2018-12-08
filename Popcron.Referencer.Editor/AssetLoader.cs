@@ -35,14 +35,24 @@ namespace Popcron.Referencer
             {
                 typeToLoader = new Dictionary<Type, AssetLoader>();
 
-                IEnumerable<Type> types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes()).Where(p => typeof(AssetLoader).IsAssignableFrom(p));
-                foreach (Type type in types)
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                foreach (var assembly in assemblies)
                 {
-                    if (type.IsAbstract) continue;
+                    var types = assembly.GetTypes();
+                    foreach (var type in types)
+                    {
+                        if (type.IsAbstract) continue;
+                        if (type.IsSubclassOf(typeof(AssetLoader)))
+                        {
+                            AssetLoader assetLoader = (AssetLoader)Activator.CreateInstance(type);
+                            typeToLoader.Add(assetLoader.Type, assetLoader);
 
-                    AssetLoader assetLoader = (AssetLoader)Activator.CreateInstance(type);
-                    typeToLoader.Add(assetLoader.Type, assetLoader);
+                            Debug.Log("Created " + assetLoader.GetType().FullName);
+                        }
+                    }
                 }
+
+                Debug.Log("Found " + typeToLoader.Count + " loaders");
             }
         }
 
