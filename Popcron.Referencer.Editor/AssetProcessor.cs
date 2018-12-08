@@ -141,7 +141,7 @@ namespace Popcron.Referencer
 
         private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
-            Settings settings = Settings.Current;
+            Settings settings = Settings.Current ?? new Settings();
 
             //add these assets
             foreach (string path in importedAssets)

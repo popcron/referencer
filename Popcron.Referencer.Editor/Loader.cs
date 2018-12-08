@@ -36,17 +36,19 @@ namespace Popcron.Referencer
 
         public static List<string> FindAssets(string filter)
         {
+            Settings settings = Settings.Current ?? new Settings();
+
             List<string> paths = new List<string>();
             string[] assets = AssetDatabase.FindAssets(filter);
             foreach (string guid in assets)
             {
                 string path = AssetDatabase.GUIDToAssetPath(guid);
-                if (path == Settings.Current.referencesAssetPath) continue;
+                if (path == settings.referencesAssetPath) continue;
 
                 path = path.Replace("Assets/", "");
 
                 bool ignore = false;
-                foreach (var ignoredFolder in Settings.Current.ignoredFolders)
+                foreach (var ignoredFolder in settings.ignoredFolders)
                 {
                     if (path.StartsWith(ignoredFolder))
                     {

@@ -11,12 +11,14 @@ namespace Popcron.Referencer
     {
         public static References CreateReferencesFile()
         {
+            Settings settings = Settings.Current ?? new Settings();
+
             References references = null;
             List<References> allReferences = Loader.FindAssetsByType<References>();
             for (int i = 0; i < allReferences.Count; i++)
             {
                 string path = AssetDatabase.GetAssetPath(allReferences[i]);
-                if (path == Settings.Current.referencesAssetPath)
+                if (path == settings.referencesAssetPath)
                 {
                     references = allReferences[i];
                     break;
@@ -27,7 +29,7 @@ namespace Popcron.Referencer
             if (!references)
             {
                 references = ScriptableObject.CreateInstance<References>();
-                AssetDatabase.CreateAsset(references, Settings.Current.referencesAssetPath);
+                AssetDatabase.CreateAsset(references, settings.referencesAssetPath);
                 AssetDatabase.Refresh();
                 AssetProcessor.QueueLoad = true;
             }

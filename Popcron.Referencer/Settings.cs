@@ -12,8 +12,6 @@ namespace Popcron.Referencer
         public const string SettingsKey = UniqueIdentifier + ".IgnoredFolders";
         public const string GameObjectNameKey = UniqueIdentifier + ".GameObject";
 
-        private static readonly Settings defaultSettings = new Settings();
-
         /// <summary>
         /// The current settings data being used.
         /// If set to null, it will use defaults
@@ -30,7 +28,7 @@ namespace Popcron.Referencer
                 }
                 else
                 {
-                    return defaultSettings;
+                    return null;
                 }
             }
             set
