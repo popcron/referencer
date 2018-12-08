@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Popcron.Referencer
 {
@@ -27,9 +29,42 @@ namespace Popcron.Referencer
                 references = ScriptableObject.CreateInstance<References>();
                 AssetDatabase.CreateAsset(references, Settings.Current.referencesAssetPath);
                 AssetDatabase.Refresh();
+                AssetProcessor.QueueLoad = true;
             }
 
             return references;
+        }
+
+        public static void DirtyScene()
+        {
+            Scene scene = SceneManager.GetActiveScene();
+
+            //scene is invalid, cant set it dirty
+            if (!scene.IsValid()) return;
+
+            //scene isnt loaded, cant set it dirty
+            if (!scene.isLoaded) return;
+
+            //scene isnt saved in the project, probably a new untitled scene
+            if (string.IsNullOrEmpty(scene.path)) return;
+
+            //cant do this while playing
+            if (Application.isPlaying) return;
+
+            EditorSceneManager.MarkSceneDirty(scene);
+        }
+
+        public static void DirtyReferences()
+        {
+            References references = References.Instance;
+
+            //references somehow doesnt exist
+            if (references == null) return;
+
+            //cant do this while playing
+            if (Application.isPlaying) return;
+
+            EditorUtility.SetDirty(references);
         }
     }
 }

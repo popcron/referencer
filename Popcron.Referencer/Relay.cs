@@ -7,37 +7,74 @@ namespace Popcron.Referencer
 {
     internal class Relay
     {
-        internal static References CreateReferencesFile()
+        private static Type helperType = null;
+
+        private static Type HelperType
         {
-            Type helper = Type.GetType("Popcron.Referencer.Helper, Popcron.Referencer.Editor");
-            if (helper == null)
+            get
             {
-                Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (var assembly in assemblies)
+                //try and get directly using name and assembly
+                if (helperType == null)
                 {
-                    if (assembly.FullName.StartsWith("Popcron.Referencer.Editor,"))
+                    helperType = Type.GetType("Popcron.Referencer.Helper, Popcron.Referencer.Editor");
+                }
+
+                //still didnt find, scrape everything
+                if (helperType == null)
+                {
+                    Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                    foreach (var assembly in assemblies)
                     {
-                        var types = assembly.GetTypes();
-                        foreach (var type in types)
+                        if (assembly.FullName.StartsWith("Popcron.Referencer.Editor,"))
                         {
-                            if (type.FullName == "Popcron.Referencer.Helper")
+                            var types = assembly.GetTypes();
+                            foreach (var type in types)
                             {
-                                helper = type;
+                                if (type.FullName == "Popcron.Referencer.Helper")
+                                {
+                                    helperType = type;
+                                }
                             }
                         }
                     }
                 }
-            }
 
+                return helperType;
+            }
+        }
+
+        internal static References CreateReferencesFile()
+        {
+            Type helper = HelperType;
             if (helper != null)
             {
-                MethodInfo createReferenceFileMethod = helper.GetMethod("CreateReferencesFile");
-                object value = createReferenceFileMethod.Invoke(null, null);
+                MethodInfo method = helper.GetMethod("CreateReferencesFile");
+                object value = method.Invoke(null, null);
                 return value as References;
             }
             else
             {
                 return null;
+            }
+        }
+
+        internal static void DirtyScene()
+        {
+            Type helper = HelperType;
+            if (helper != null)
+            {
+                MethodInfo method = helper.GetMethod("DirtyScene");
+                method.Invoke(null, null);
+            }
+        }
+
+        internal static void DirtyReferences()
+        {
+            Type helper = HelperType;
+            if (helper != null)
+            {
+                MethodInfo method = helper.GetMethod("DirtyReferences");
+                method.Invoke(null, null);
             }
         }
     }

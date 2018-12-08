@@ -30,12 +30,18 @@ namespace Popcron.Referencer
                     References.Add(item);
                 }
             }
+
+            //mark as dirty
+            Helper.DirtyReferences();
         }
 
         [MenuItem("Popcron/Referencer/Clear")]
         public static void Clear()
         {
             References.Clear();
+
+            //mark as dirty
+            Helper.DirtyReferences();
         }
 
         private static List<AssetLoader> Loaders
@@ -51,6 +57,18 @@ namespace Popcron.Referencer
                 }
 
                 return loaders;
+            }
+        }
+
+        internal static bool QueueLoad
+        {
+            get
+            {
+                return EditorPrefs.GetInt(Settings.UniqueIdentifier + ".QueueLoad", 0) == 1;
+            }
+            set
+            {
+                EditorPrefs.SetInt(Settings.UniqueIdentifier + ".QueueLoad", value ? 1 : 0);
             }
         }
 
@@ -129,11 +147,24 @@ namespace Popcron.Referencer
             foreach (string path in importedAssets)
             {
                 //ignore the reference asset file
-                if (path == settings.referencesAssetPath) continue;
+                if (path == settings.referencesAssetPath)
+                {
+                    //unless a load all operation was queued
+                    if (QueueLoad)
+                    {
+                        QueueLoad = false;
+                        LoadAll();
+                    }
+
+                    continue;
+                }
 
                 if (settings.ShouldIgnorePath(path)) continue;
 
                 Add(path);
+
+                //mark as dirty
+                Helper.DirtyReferences();
             }
 
             //remove these assets
@@ -142,6 +173,9 @@ namespace Popcron.Referencer
                 if (settings.ShouldIgnorePath(path)) continue;
 
                 Remove(path);
+
+                //mark as dirty
+                Helper.DirtyReferences();
             }
 
             //delete and add
@@ -151,6 +185,9 @@ namespace Popcron.Referencer
                 if (settings.ShouldIgnorePath(movedAssets[i])) continue;
 
                 Move(movedFromAssetPaths[i], movedAssets[i]);
+
+                //mark as dirty
+                Helper.DirtyReferences();
             }
         }
     }

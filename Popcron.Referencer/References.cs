@@ -14,7 +14,7 @@ namespace Popcron.Referencer
         private static References instance;
         private static Random random;
 
-        private static References Instance
+        public static References Instance
         {
             get
             {
@@ -25,20 +25,41 @@ namespace Popcron.Referencer
                     //try to find a container first
                     GameObject instanceContainer = GameObject.Find(Settings.UniqueIdentifier);
                     ReferencesContainer container = null;
+                    bool dirty = false;
                     if (!instanceContainer)
                     {
+                        //game object is not found
                         instanceContainer = new GameObject(Settings.UniqueIdentifier)
                         {
                             hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector
                         };
                         container = instanceContainer.AddComponent<ReferencesContainer>();
+                        dirty = true;
                     }
                     else
                     {
+                        //game object is found and the component is also found
                         container = instanceContainer.GetComponent<ReferencesContainer>();
+                        if (container == null)
+                        {
+                            container = instanceContainer.AddComponent<ReferencesContainer>();
+                            dirty = true;
+                        }
                     }
 
-                    FindReference(container);
+                    //no references file is on container, create new one
+                    if (!container.references)
+                    {
+                        container.references = Relay.CreateReferencesFile();
+                        dirty = true;
+                    }
+
+                    //dirty call was queued, hehe
+                    //mark scene as dirty
+                    if (dirty)
+                    {
+                        Relay.DirtyScene();
+                    }
 
                     instance = container.references;
                 }
@@ -54,15 +75,6 @@ namespace Popcron.Referencer
         private Dictionary<string, Reference> nameToItem = null;
         private Dictionary<string, Reference> idToItem = null;
         private Dictionary<Object, string> objectToPath = null;
-
-        private static void FindReference(ReferencesContainer container)
-        {
-            if (!container.references)
-            {
-                instance = Relay.CreateReferencesFile();
-                container.references = instance;
-            }
-        }
 
         public static void Remove(string name)
         {
@@ -343,7 +355,20 @@ namespace Popcron.Referencer
                         continue;
                     }
 
-                    string key = items[i].ID + ":" + items[i].Type.FullName;
+                    long? id = items[i].ID;
+                    if (id == null)
+                    {
+                        continue;
+                    }
+
+                    Type type = items[i].Type;
+                    if (type == null)
+                    {
+                        queueRefresh = true;
+                        continue;
+                    }
+
+                    string key = id.Value + ":" + type.FullName;
                     if (idToItem.ContainsKey(key)) continue;
 
                     Reference value = items[i];
