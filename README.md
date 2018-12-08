@@ -20,16 +20,38 @@ using Popcron.Referencer;
 public class Player : MonoBehaviour
 {
     private Sprite playerSprite;
-
+    private Sprite gunSprite;
+    
     private void Awake()
     {
+        //load using an absolute path
         playerSprite = Referencer.Get<Sprite>("Art/Sprites/Player.psd/Player_0");
+        
+        //load using just the name, if there are duplicates it will find the first one
+        gunSprite = Referencer.Get<Sprite>("GunSprite");
+        
+        
     }
 }
 ```
+
+## ScriptableObject IDs
+If a scriptable object type has an ID property or field, the loader will recognize it and register it the ID given, as well as the name and path. This allows you to retrieve the asset using its ID.
+
+```cs
+//get a gun scriptable object asset that has an ID of 12
+int id = 12;
+Gun gun = References.Get<Gun>(id);
+```
+
+## Settings
+The `Settings` class has a static property called `Current`. This property holds the settings that are used by the loader. If provided with a custom value it will use that one instead of the defaults. If given null, it will use defaults.
+
+The class contains fields for where the reference file should be stored, default is `Assets/References.asset`. As well as an array for which folders and extensions should be ignored.
 
 ## FAQ
 - **What namespace?** Popcron.Referencer
 - **It loads everything?** Yes
 - **Can I use it at runtime?** Yes
-- **Is it optimized?** Yes
+- **Is it optimized?** For speed, yeah
+- **How can I ignore folder X?** Provide a value to `Settings.Current` with your own ignoreFolders value
