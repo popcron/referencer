@@ -37,15 +37,6 @@ public class Player : MonoBehaviour
 }
 ```
 
-## ScriptableObject IDs
-If a scriptable object type has an ID property or field, the loader will recognize it and register it the ID given, as well as the name and path. This allows you to retrieve the asset using its ID.
-
-```cs
-//get a gun scriptable object asset that has an ID of 12
-int id = 12;
-Gun gun = References.Get<Gun>(id);
-```
-
 ## Loaders
 This package contains loaders for the follwing types:
 - AudioClip
@@ -56,6 +47,16 @@ This package contains loaders for the follwing types:
 - Sprite
 
 To create a custom loader, you can inherit from the `AssetLoader` type. The required `Type` property is the type of the asset. For an example, see the provided loader classes in the `unity` branch.
+
+**ScriptableObject IDs**
+
+If a scriptable object type has an ID property or field, the loader will recognize it and register it the ID given, as well as the name and path. This allows you to retrieve the asset using its ID.
+
+```cs
+//get a gun scriptable object asset that has an ID of 12
+int id = 12;
+Gun gun = References.Get<Gun>(id);
+```
 
 ## Settings
 The `Settings` class has a static property called `Current`. This property holds the settings that are used by the loader. If provided with a custom value it will use that one instead of the defaults. If given null, it will use defaults.
