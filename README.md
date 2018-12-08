@@ -1,6 +1,8 @@
 # Referencer
 Used for getting a reference to all assets in the project. Which automatically listens for file changes and ensures that all registered assets can be referenced at runtime without the need of manually creating lists and fields to keep track.
 
+This was created so I could reference all of my assets via code with a single line. I'm lazy.
+
 ## Requirements
 - .NET Framework 3.5
 
@@ -43,6 +45,17 @@ If a scriptable object type has an ID property or field, the loader will recogni
 int id = 12;
 Gun gun = References.Get<Gun>(id);
 ```
+
+## Loaders
+This package contains loaders for the follwing types:
+- AudioClip
+- Font
+- Material
+- GameObject (Prefabs)
+- ScriptableObject
+- Sprite
+
+To create a custom loader, you can inherit from the `AssetLoader` type. The required `Type` property is the type of the asset. For an example, see the provided loader classes in the `unity` branch.
 
 ## Settings
 The `Settings` class has a static property called `Current`. This property holds the settings that are used by the loader. If provided with a custom value it will use that one instead of the defaults. If given null, it will use defaults.
