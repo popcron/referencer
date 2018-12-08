@@ -8,8 +8,6 @@ namespace Popcron.Referencer
 {
     public class AssetProcessor : AssetPostprocessor
     {
-        private static Dictionary<Type, AssetLoader> loaders = null;
-
         public static void OnPreBuild()
         {
             LoadAll();
@@ -22,7 +20,7 @@ namespace Popcron.Referencer
             References.Clear();
 
             //then loop though all loaders and load the assets of their types
-            foreach (var loader in Loaders)
+            foreach (var loader in AssetLoader.Loaders)
             {
                 List<Reference> items = loader.LoadAll();
                 foreach (var item in items)
@@ -44,22 +42,6 @@ namespace Popcron.Referencer
             Helper.DirtyReferences();
         }
 
-        private static List<AssetLoader> Loaders
-        {
-            get
-            {
-                LoadLoaders();
-                List<AssetLoader> loaders = new List<AssetLoader>();
-
-                for (int i = 0; i < AssetProcessor.loaders.Count; i++)
-                {
-                    loaders.Add(AssetProcessor.loaders.ElementAt(i).Value);
-                }
-
-                return loaders;
-            }
-        }
-
         internal static bool QueueLoad
         {
             get
@@ -72,47 +54,10 @@ namespace Popcron.Referencer
             }
         }
 
-        private static void LoadLoaders()
-        {
-            if (loaders == null)
-            {
-                loaders = new Dictionary<Type, AssetLoader>();
-
-                Type loaderType = typeof(AssetLoader);
-                IEnumerable<Type> types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(s => s.GetTypes()).Where(p => loaderType.IsAssignableFrom(p));
-                foreach (Type t in types)
-                {
-                    if (t == loaderType) continue;
-
-                    AssetLoader assetLoader = (AssetLoader)Activator.CreateInstance(t);
-                    loaders.Add(assetLoader.Type, assetLoader);
-                }
-            }
-        }
-
-        private static AssetLoader GetLoader(Type type)
-        {
-            LoadLoaders();
-
-            if (type.IsSubclassOf(typeof(ScriptableObject)))
-            {
-                type = typeof(ScriptableObject);
-            }
-
-            if (loaders.TryGetValue(type, out AssetLoader loader))
-            {
-                return loader;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
         private static void Add(string path)
         {
             Type type = AssetDatabase.GetMainAssetTypeAtPath(path);
-            AssetLoader loader = GetLoader(type);
+            AssetLoader loader = AssetLoader.Get(type);
             if (loader != null)
             {
                 path = path.Replace("Assets/", "");

@@ -47,12 +47,6 @@
     <Compile Include="Helper.cs" />
     <Compile Include="Initializer.cs" />
     <Compile Include="Loader.cs" />
-    <Compile Include="Loaders\AudioClipLoader.cs" />
-    <Compile Include="Loaders\MaterialLoader.cs" />
-    <Compile Include="Loaders\FontLoader.cs" />
-    <Compile Include="Loaders\PrefabLoader.cs" />
-    <Compile Include="Loaders\ScriptableObjectLoader.cs" />
-    <Compile Include="Loaders\SpriteLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
