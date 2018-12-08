@@ -53,6 +53,7 @@
     <ProjectReference Include="..\Popcron.Referencer\Popcron.Referencer.csproj">
       <Project>{4cafdf44-9b23-471b-9d22-b717591fee53}</Project>
       <Name>Popcron.Referencer</Name>
+      <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
