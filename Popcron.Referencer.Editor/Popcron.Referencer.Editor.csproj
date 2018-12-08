@@ -7,8 +7,8 @@
     <ProjectGuid>{CF20B628-5ED0-4B12-AF1A-F2A651E583DF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Popcron.Referencer</RootNamespace>
-    <AssemblyName>Popcron.Referencer</AssemblyName>
+    <RootNamespace>Popcron.Referencer.Editor</RootNamespace>
+    <AssemblyName>Popcron.Referencer.Editor</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -32,18 +32,34 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <Reference Include="UnityEditor">
+      <HintPath>..\..\..\..\..\..\Program Files\Unity\Hub\Editor\2018.2.5f1\Editor\Data\Managed\UnityEditor.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\..\..\..\..\Program Files\Unity\Hub\Editor\2018.2.5f1\Editor\Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssetLoader.cs" />
+    <Compile Include="AssetProcessor.cs" />
+    <Compile Include="Helper.cs" />
+    <Compile Include="Initializer.cs" />
+    <Compile Include="Loader.cs" />
+    <Compile Include="Loaders\AudioClipLoader.cs" />
+    <Compile Include="Loaders\MaterialLoader.cs" />
+    <Compile Include="Loaders\FontLoader.cs" />
+    <Compile Include="Loaders\PrefabLoader.cs" />
+    <Compile Include="Loaders\ScriptableObjectLoader.cs" />
+    <Compile Include="Loaders\SpriteLoader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Popcron.Referencer\Popcron.Referencer.csproj">
+      <Project>{4cafdf44-9b23-471b-9d22-b717591fee53}</Project>
+      <Name>Popcron.Referencer</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
