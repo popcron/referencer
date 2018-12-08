@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{4CAFDF44-9B23-471B-9D22-B717591FEE53}</ProjectGuid>
+    <ProjectGuid>{CF20B628-5ED0-4B12-AF1A-F2A651E583DF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Popcron.Referencer</RootNamespace>
