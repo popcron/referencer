@@ -46,13 +46,9 @@ namespace Popcron.Referencer
                         {
                             AssetLoader assetLoader = (AssetLoader)Activator.CreateInstance(type);
                             typeToLoader.Add(assetLoader.Type, assetLoader);
-
-                            Debug.Log("Created " + assetLoader.GetType().FullName);
                         }
                     }
                 }
-
-                Debug.Log("Found " + typeToLoader.Count + " loaders");
             }
         }
 
