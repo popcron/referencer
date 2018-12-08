@@ -38,11 +38,13 @@ namespace Popcron.Referencer
             //found id property
             if (property != null)
             {
-                id = property.GetValue(scriptableObject, null) as long?;
+                object value = property.GetValue(scriptableObject, null);
+                id = Convert.ChangeType(value, typeof(long)) as long?;
             }
             else if (field != null)
             {
-                id = field.GetValue(scriptableObject) as long?;
+                object value = field.GetValue(scriptableObject);
+                id = Convert.ChangeType(value, typeof(long)) as long?;
             }
 
             Reference item = new Reference(scriptableObject, scriptableObject.GetType(), path)
