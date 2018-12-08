@@ -32,7 +32,20 @@ public class Player : MonoBehaviour
         //load using just the name, if there are duplicates it will find the first one
         gunSprite = Referencer.Get<Sprite>("GunSprite");
         
+        //returns all scriptable objects of type Gun
+        List<Gun> allGuns = Referencer.GetAll<Gun>();
+        //List<Gun> allGuns = Referencer.GetAll(typeof(Gun));
         
+        //gets the original path of the sprite asset
+        string path = Referencer.GetPath(gunSprite);
+        
+        //returns a random asset from all guns
+        Gun randomGun = Referencer.GetRandom<Gun>();
+        
+        //returns a gun with ID 12
+        Gun pistol = Referencer.Get<Gun>(12);
+        
+        //
     }
 }
 ```
