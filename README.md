@@ -28,9 +28,14 @@ public class Player : MonoBehaviour
 }
 ```
 
+## Settings
+The `Settings` class has a static property called `Current`. This property holds the settings that are used by the loader. If provided with a custom value it will use that one instead of the defaults. If given null, it will use defaults.
+
+The class contains fields for where the reference file should be stored, default is `Assets/References.asset`. As well as an array for which folders and extensions to ignore.
+
 ## FAQ
 - **What namespace?** Popcron.Referencer
 - **It loads everything?** Yes
 - **Can I use it at runtime?** Yes
 - **Is it optimized?** For speed, yeah
-- **How can I ignore folder X?** Provide a value to `Settings.Current`
+- **How can I ignore folder X?** Provide a value to `Settings.Current` with your own ignoreFolders value
