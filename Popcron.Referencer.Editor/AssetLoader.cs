@@ -7,7 +7,7 @@ namespace Popcron.Referencer
 {
     public abstract class AssetLoader
     {
-        private static Dictionary<Type, AssetLoader> typeToLoader = new Dictionary<Type, AssetLoader>();
+        private static Dictionary<Type, AssetLoader> typeToLoader = null;
 
         public abstract Type Type { get; }
         public abstract List<Reference> LoadAll();
