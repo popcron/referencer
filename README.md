@@ -32,4 +32,5 @@ public class Player : MonoBehaviour
 - **What namespace?** Popcron.Referencer
 - **It loads everything?** Yes
 - **Can I use it at runtime?** Yes
-- **Is it optimized?** Yes
+- **Is it optimized?** For speed, yeah
+- **How can I ignore folder X?** Provide a value to `Settings.Current`
