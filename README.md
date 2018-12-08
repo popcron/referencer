@@ -1,16 +1,16 @@
 # Referencer
-Used for getting a reference to all assets in the project.
+Used for getting a reference to all assets in the project. Which automatically listens for file changes and ensures that all registered assets can be referenced at runtime without the need of manually creating lists and fields to keep track.
 
 ## Requirements
 - .NET Framework 3.5
 
 ## Installation
-Add the .dll file to the Plugins folder.
-
 If using 2018.3.x, you can add a new entry to the manifest.json file in your Packages folder:
 ```json
 "com.popcron.referencer": "https://github.com/popcron/referencer.git#unity"
 ```
+
+On first fresh loads, you might have to load all assets using the `Popcron/Referencer/Load all` menu item.
 
 ## Example
 ```cs
