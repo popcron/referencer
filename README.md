@@ -44,8 +44,6 @@ public class Player : MonoBehaviour
         
         //returns a gun with ID 12
         Gun pistol = Referencer.Get<Gun>(12);
-        
-        //
     }
 }
 ```
