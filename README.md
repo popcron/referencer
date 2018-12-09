@@ -57,11 +57,11 @@ This package contains loaders for the follwing types:
 - ScriptableObject
 - Sprite
 
-To create a custom loader, you can inherit from the `AssetLoader` type. The required `Type` property is the type of the asset. For an example, see the provided loader classes in the `unity` branch.
+To create a custom loader, you can inherit from the `AssetLoader` type. For an example, see the provided loader classes in the Loaders folder.
 
 **ScriptableObject IDs**
 
-If a scriptable object type has an ID property or field, the loader will recognize it and register it the ID given, as well as the name and path. This allows you to retrieve the asset using its ID.
+In addition to the scriptable object loader, it will also detect if the type has an ID property or field. If it does, the loader will recognize it and register it for each item. This allows you to retrieve the asset using its ID.
 
 ```cs
 //get a gun scriptable object asset that has an ID of 12
