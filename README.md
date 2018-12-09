@@ -81,3 +81,4 @@ The class contains fields for where the reference file should be stored, default
 - **Can I make my own custom loader?** Yes
 - **Is it optimized?** For speed, yes
 - **How can I ignore folder X?** Provide a value to `Settings.Current` with your own ignoreFolders value
+- **Are those meta files really necessary?** As annoying as they are to look at, yes
