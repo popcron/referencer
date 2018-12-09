@@ -1,7 +1,7 @@
 # Referencer
 Used for getting a reference to all assets in the project. Which automatically listens for file changes and ensures that all registered assets can be referenced at runtime without the need of manually creating lists and fields to keep track.
 
-This was created so I could reference all of my assets via code with a single line. I'm lazy.
+*Note:* This was created so I could reference all of my assets via code with a single line. I'm lazy.
 
 ## Requirements
 - .NET Framework 3.5
