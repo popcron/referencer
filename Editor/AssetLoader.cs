@@ -17,7 +17,7 @@ namespace Popcron.Referencer
         {
             get
             {
-                RefreshCache();
+                RefreshCache(true);
                 List<AssetLoader> loaders = new List<AssetLoader>();
 
                 for (int i = 0; i < typeToLoader.Count; i++)
@@ -29,9 +29,9 @@ namespace Popcron.Referencer
             }
         }
 
-        private static void RefreshCache()
+        public static void RefreshCache(bool force)
         {
-            if (typeToLoader == null)
+            if (typeToLoader == null || force)
             {
                 typeToLoader = new Dictionary<Type, AssetLoader>();
 
@@ -54,7 +54,7 @@ namespace Popcron.Referencer
 
         public static AssetLoader Get(Type type)
         {
-            RefreshCache();
+            RefreshCache(false);
 
             if (type.IsSubclassOf(typeof(ScriptableObject)))
             {
@@ -73,7 +73,7 @@ namespace Popcron.Referencer
 
         public static AssetLoader Get<T>()
         {
-            RefreshCache();
+            RefreshCache(false);
 
             Type type = typeof(T);
             if (type.IsSubclassOf(typeof(ScriptableObject)))

@@ -1,0 +1,15 @@
+{
+    "name": "Popcron.Referencer.Loaders",
+    "references": [
+        "Popcron.Referencer",
+        "Popcron.Referencer.Editor"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}

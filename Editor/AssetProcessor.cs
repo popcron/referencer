@@ -14,8 +14,14 @@ namespace Popcron.Referencer
             //first clear
             References.Clear();
 
+            var loaders = AssetLoader.Loaders;
+            if (loaders.Count == 0)
+            {
+                Debug.LogError("No loaders found");
+            }
+
             //then loop though all loaders and load the assets of their types
-            foreach (var loader in AssetLoader.Loaders)
+            foreach (var loader in loaders)
             {
                 List<Reference> items = loader.LoadAll();
                 foreach (var item in items)

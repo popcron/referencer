@@ -1,7 +1,7 @@
 {
-    "name": "Editor",
+    "name": "Popcron.Referencer.Editor",
     "references": [
-        "Runtime"
+        "Popcron.Referencer"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [
