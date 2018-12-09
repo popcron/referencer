@@ -9,7 +9,7 @@ This was created so I could reference all of my assets via code with a single li
 ## Installation
 If using 2018.3.x, you can add a new entry to the manifest.json file in your Packages folder:
 ```json
-"com.popcron.referencer": "https://github.com/popcron/referencer.git"
+"com.popcron.referencer": "https://github.com/popcron/referencer.git#unity"
 ```
 
 On first fresh loads, you might have to load all assets using the `Popcron/Referencer/Load all` menu item.
@@ -57,11 +57,11 @@ This package contains loaders for the follwing types:
 - ScriptableObject
 - Sprite
 
-To create a custom loader, you can inherit from the `AssetLoader` type. For an example, see the provided loader classes in the Loaders folder.
+To create a custom loader, you can inherit from the `AssetLoader` type. The required `Type` property is the type of the asset. For an example, see the provided loader classes in the `unity` branch.
 
 **ScriptableObject IDs**
 
-In addition to the scriptable object loader, it will also detect if the type has an ID property or field. If it does, the loader will recognize it and register it for each item. This allows you to retrieve the asset using its ID.
+If a scriptable object type has an ID property or field, the loader will recognize it and register it the ID given, as well as the name and path. This allows you to retrieve the asset using its ID.
 
 ```cs
 //get a gun scriptable object asset that has an ID of 12
@@ -76,9 +76,7 @@ The class contains fields for where the reference file should be stored, default
 
 ## FAQ
 - **What namespace?** Popcron.Referencer
-- **It loads everything?** Everything that it was asked to
+- **It loads everything?** Yes
 - **Can I use it at runtime?** Yes
-- **Can I make my own custom loader?** Yes
-- **Is it optimized?** For speed, yes
+- **Is it optimized?** For speed, yeah
 - **How can I ignore folder X?** Provide a value to `Settings.Current` with your own ignoreFolders value
-- **Are those meta files really necessary?** As annoying as they are to look at, yes

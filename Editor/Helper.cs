@@ -5,6 +5,8 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+using Object = UnityEngine.Object;
+
 namespace Popcron.Referencer
 {
     public class Helper
@@ -35,6 +37,28 @@ namespace Popcron.Referencer
             }
 
             return references;
+        }
+
+        public static List<string> FindAssets(string filter)
+        {
+            List<string> paths = new List<string>();
+            string[] guids = AssetDatabase.FindAssets(filter);
+            foreach (var guid in guids)
+            {
+                paths.Add(AssetDatabase.GUIDToAssetPath(guid));
+            }
+
+            return paths;
+        }
+
+        public static Object LoadAssetAtPath(string path, Type type)
+        {
+            return AssetDatabase.LoadAssetAtPath(path, type);
+        }
+
+        public static Object[] LoadAllAssetsAtPath(string path)
+        {
+            return AssetDatabase.LoadAllAssetsAtPath(path);
         }
 
         public static void DirtyScene()

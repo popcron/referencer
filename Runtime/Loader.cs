@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UnityEditor;
 using System;
 
 using Object = UnityEngine.Object;
@@ -11,11 +10,10 @@ namespace Popcron.Referencer
         public static List<T> FindAssetsByType<T>() where T : Object
         {
             List<T> assets = new List<T>();
-            string[] guids = AssetDatabase.FindAssets(string.Format("t:{0}", typeof(T)));
-            for (int i = 0; i < guids.Length; i++)
+            List<string> paths = Relay.FindAssets<T>();
+            foreach (string path in paths)
             {
-                string assetPath = AssetDatabase.GUIDToAssetPath(guids[i]);
-                T asset = AssetDatabase.LoadAssetAtPath<T>(assetPath);
+                T asset = Relay.LoadAssetAtPath<T>(path);
                 if (asset != null)
                 {
                     assets.Add(asset);
@@ -26,12 +24,12 @@ namespace Popcron.Referencer
 
         public static Object LoadAssetAtPath(string path, Type type)
         {
-            return AssetDatabase.LoadAssetAtPath("Assets/" + path, type);
+            return Relay.LoadAssetAtPath("Assets/" + path, type);
         }
 
         public static Object[] LoadAllAssetsAtPath(string path)
         {
-            return AssetDatabase.LoadAllAssetsAtPath("Assets/" + path);
+            return Relay.LoadAllAssetsAtPath("Assets/" + path);
         }
 
         public static List<string> FindAssets(string filter)
@@ -39,18 +37,17 @@ namespace Popcron.Referencer
             Settings settings = Settings.Current ?? new Settings();
 
             List<string> paths = new List<string>();
-            string[] assets = AssetDatabase.FindAssets(filter);
-            foreach (string guid in assets)
+            List<string> assets = Relay.FindAssets(filter);
+            foreach (string path in assets)
             {
-                string path = AssetDatabase.GUIDToAssetPath(guid);
                 if (path == settings.referencesAssetPath) continue;
 
-                path = path.Replace("Assets/", "");
+                string newPath = path.Replace("Assets/", "");
 
                 bool ignore = false;
                 foreach (var ignoredFolder in settings.ignoredFolders)
                 {
-                    if (path.StartsWith(ignoredFolder))
+                    if (newPath.StartsWith(ignoredFolder))
                     {
                         ignore = true;
                         break;
@@ -62,7 +59,7 @@ namespace Popcron.Referencer
                     break;
                 }
 
-                paths.Add(path);
+                paths.Add(newPath);
             }
 
             return paths;
