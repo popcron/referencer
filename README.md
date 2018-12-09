@@ -39,11 +39,8 @@ public class Player : MonoBehaviour
         //gets the original path of the sprite asset
         string path = Referencer.GetPath(gunSprite);
         
-        //returns a random asset from all guns
+        //returns a random gun
         Gun randomGun = Referencer.GetRandom<Gun>();
-        
-        //returns a gun with ID 12
-        Gun pistol = Referencer.Get<Gun>(12);
     }
 }
 ```
@@ -57,12 +54,11 @@ This package contains loaders for the follwing types:
 - ScriptableObject
 - Sprite
 
-To create a custom loader, you can inherit from the `AssetLoader` type. The required `Type` property is the type of the asset. For an example, see the provided loader classes in the `unity` branch.
+To create a custom loader, you can inherit from the `AssetLoader` type. For an example, see the loaders provided for the listed types in the Loaders folder.
 
 **ScriptableObject IDs**
 
-If a scriptable object type has an ID property or field, the loader will recognize it and register it the ID given, as well as the name and path. This allows you to retrieve the asset using its ID.
-
+Included is the ScriptableObject loader, which will load all found types into the references. It will also check if the type has an ID property or id field. This gives the references an extra piece of information for the loaded object, which will also allow you to load an object using its ID.
 ```cs
 //get a gun scriptable object asset that has an ID of 12
 int id = 12;
@@ -78,5 +74,6 @@ The class contains fields for where the reference file should be stored, default
 - **What namespace?** Popcron.Referencer
 - **It loads everything?** Yes
 - **Can I use it at runtime?** Yes
-- **Is it optimized?** For speed, yeah
+- **Is it optimized?** For speed, yes
 - **How can I ignore folder X?** Provide a value to `Settings.Current` with your own ignoreFolders value
+- **Can I make my own loader?** Yes, inherit from the `AssetLoader` type
