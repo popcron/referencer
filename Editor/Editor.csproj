@@ -50,7 +50,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Popcron.Referencer\Popcron.Referencer.csproj">
+    <ProjectReference Include="..\Runtime\Runtime.csproj">
       <Project>{4cafdf44-9b23-471b-9d22-b717591fee53}</Project>
       <Name>Popcron.Referencer</Name>
       <Private>False</Private>

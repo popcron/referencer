@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Popcron.Referencer.Editor", "Popcron.Referencer.Editor\Popcron.Referencer.Editor.csproj", "{CF20B628-5ED0-4B12-AF1A-F2A651E583DF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Editor", "Editor\Editor.csproj", "{CF20B628-5ED0-4B12-AF1A-F2A651E583DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Popcron.Referencer", "Popcron.Referencer\Popcron.Referencer.csproj", "{4CAFDF44-9B23-471B-9D22-B717591FEE53}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runtime", "Runtime\Runtime.csproj", "{4CAFDF44-9B23-471B-9D22-B717591FEE53}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,11 +14,9 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{CF20B628-5ED0-4B12-AF1A-F2A651E583DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CF20B628-5ED0-4B12-AF1A-F2A651E583DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF20B628-5ED0-4B12-AF1A-F2A651E583DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF20B628-5ED0-4B12-AF1A-F2A651E583DF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4CAFDF44-9B23-471B-9D22-B717591FEE53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4CAFDF44-9B23-471B-9D22-B717591FEE53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4CAFDF44-9B23-471B-9D22-B717591FEE53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4CAFDF44-9B23-471B-9D22-B717591FEE53}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
