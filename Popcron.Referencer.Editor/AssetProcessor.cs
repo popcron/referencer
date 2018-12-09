@@ -8,11 +8,6 @@ namespace Popcron.Referencer
 {
     public class AssetProcessor : AssetPostprocessor
     {
-        public static void OnPreBuild()
-        {
-            LoadAll();
-        }
-
         [MenuItem("Popcron/Referencer/Load all")]
         public static void LoadAll()
         {
