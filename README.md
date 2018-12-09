@@ -76,7 +76,8 @@ The class contains fields for where the reference file should be stored, default
 
 ## FAQ
 - **What namespace?** Popcron.Referencer
-- **It loads everything?** Yes
+- **It loads everything?** Everything that it was asked to
 - **Can I use it at runtime?** Yes
-- **Is it optimized?** For speed, yeah
+- **Can I make my own custom loader?** Yes
+- **Is it optimized?** For speed, yes
 - **How can I ignore folder X?** Provide a value to `Settings.Current` with your own ignoreFolders value
