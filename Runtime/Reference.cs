@@ -146,5 +146,34 @@ namespace Popcron.Referencer
             this.typeName = type.FullName;
             this.cachedType = type;
         }
+
+        public static implicit operator Reference(string path)
+        {
+            List<Reference> items = References.Instance.items;
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i].Path == path)
+                {
+                    return items[i];
+                }
+            }
+
+            return null;
+        }
+
+        public static implicit operator Reference(long id)
+        {
+            List<Reference> items = References.Instance.items;
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i].ID == null) continue;
+                if (items[i].ID == id)
+                {
+                    return items[i];
+                }
+            }
+
+            return null;
+        }
     }
 }
