@@ -376,6 +376,25 @@ namespace Popcron.Referencer
                 }
             }
 
+            if (objectToPath == null)
+            {
+                objectToPath = new Dictionary<Object, string>();
+                for (int i = 0; i < items.Count; i++)
+                {
+                    if (items[i] == null)
+                    {
+                        queueRefresh = true;
+                        continue;
+                    }
+
+                    Object key = items[i].Object;
+                    if (objectToPath.ContainsKey(key)) continue;
+
+                    Reference value = items[i];
+                    objectToPath.Add(key, items[i].Path);
+                }
+            }
+
             if (queueRefresh)
             {
                 Debug.LogError("Errors found when creating cache, please refresh all assets");
