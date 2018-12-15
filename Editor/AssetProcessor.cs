@@ -81,7 +81,7 @@ namespace Popcron.Referencer
             oldPath = oldPath.Replace("Assets/", "");
             newPath = newPath.Replace("Assets/", "");
 
-            var item = References.GetItem(oldPath);
+            var item = References.GetReference(oldPath);
             if (item != null) item.Path = newPath;
         }
 

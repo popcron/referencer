@@ -69,19 +69,23 @@ namespace Popcron.Referencer
         }
 
         [SerializeField]
-        private List<Reference> items = new List<Reference>();
+        internal List<Reference> items = new List<Reference>();
 
         private Dictionary<string, Reference> pathToItem = null;
         private Dictionary<string, Reference> nameToItem = null;
         private Dictionary<string, Reference> idToItem = null;
         private Dictionary<Object, string> objectToPath = null;
 
-        public static void Remove(string name)
+        /// <summary>
+        /// Removes a reference at this path
+        /// </summary>
+        /// <param name="path"></param>
+        public static void Remove(string path)
         {
             List<Reference> items = Instance.items;
             for (int i = 0; i < items.Count; i++)
             {
-                if (items[i].Path == name)
+                if (items[i].Path == path)
                 {
                     items.RemoveAt(i);
                     return;
@@ -89,12 +93,17 @@ namespace Popcron.Referencer
             }
         }
 
-        public static Reference GetItem(string name)
+        /// <summary>
+        /// Returns a raw reference item using a path
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static Reference GetReference(string path)
         {
             List<Reference> items = Instance.items;
             for (int i = 0; i < items.Count; i++)
             {
-                if (items[i].Path == name)
+                if (items[i].Path == path)
                 {
                     return items[i];
                 }
@@ -103,22 +112,36 @@ namespace Popcron.Referencer
             return null;
         }
 
+        /// <summary>
+        /// Clears the entire reference list
+        /// </summary>
         public static void Clear()
         {
             Instance?.items?.Clear();
         }
 
-        public static bool Contains(string name)
+        /// <summary>
+        /// Returns true if an object with this path exists
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public static bool Contains(string path)
         {
             List<Reference> items = Instance.items;
             for (int i = 0; i < items.Count; i++)
             {
-                if (items[i].Path == name) return true;
+                if (items[i].Path == path) return true;
             }
 
             return false;
         }
 
+        /// <summary>
+        /// Returns an object with a matching ID field or property.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public static T Get<T>(long? id) where T : class
         {
             if (id == null) return null;
@@ -153,6 +176,11 @@ namespace Popcron.Referencer
             return null;
         }
 
+        /// <summary>
+        /// Returns a random object of a type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static T GetRandom<T>() where T : class
         {
             List<T> list = GetAll<T>();
@@ -165,6 +193,11 @@ namespace Popcron.Referencer
             return list[random.Next(list.Count)];
         }
 
+        /// <summary>
+        /// Returns the path of an object. It will return null if the object isnt tracked.
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
         public static string GetPath(Object value)
         {
             Instance.Cache();
@@ -180,6 +213,12 @@ namespace Popcron.Referencer
             return null;
         }
 
+        /// <summary>
+        /// Returns an object with using the name or path.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public static T Get<T>(string name) where T : class
         {
             Instance.Cache();
@@ -233,6 +272,11 @@ namespace Popcron.Referencer
             return null;
         }
 
+        /// <summary>
+        /// Returns all objecst of a type.
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
         public static List<Object> GetAll(Type type)
         {
             Instance.Cache();
@@ -250,6 +294,11 @@ namespace Popcron.Referencer
             return result;
         }
 
+        /// <summary>
+        /// Returns all objects of a type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static List<T> GetAll<T>() where T : class
         {
             Instance.Cache();
@@ -267,6 +316,11 @@ namespace Popcron.Referencer
             return result;
         }
 
+        /// <summary>
+        /// Returns all raw references of a type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public static List<Reference> GetAllReferences<T>() where T : class
         {
             Instance.Cache();
@@ -284,6 +338,10 @@ namespace Popcron.Referencer
             return result;
         }
 
+        /// <summary>
+        /// Adds an item to the list of references manually.
+        /// </summary>
+        /// <param name="item"></param>
         public static void Add(Reference item)
         {
             //first check if it already exists
@@ -296,7 +354,7 @@ namespace Popcron.Referencer
             Instance.items.Add(item);
         }
 
-        public void Cache()
+        internal void Cache()
         {
             bool queueRefresh = false;
             if (pathToItem == null)
