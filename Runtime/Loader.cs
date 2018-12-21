@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System.Reflection;
+using System.Collections.Generic;
 using System;
 
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Popcron.Referencer
@@ -63,6 +65,36 @@ namespace Popcron.Referencer
             }
 
             return paths;
+        }
+
+        public static long? GetIDFromScriptableObject(Object unityObject)
+        {
+            if (unityObject is ScriptableObject so)
+            {
+                long? id = null;
+                PropertyInfo property = unityObject.GetType().GetProperty("ID");
+                FieldInfo field = unityObject.GetType().GetField("id");
+
+                //found id property
+                if (property != null)
+                {
+                    object value = property.GetValue(unityObject, null);
+                    if (value != null)
+                    {
+                        id = Convert.ChangeType(value, typeof(long)) as long?;
+                    }
+                }
+                else if (field != null)
+                {
+                    object value = field.GetValue(unityObject);
+                    if (value != null)
+                    {
+                        id = Convert.ChangeType(value, typeof(long)) as long?;
+                    }
+                }
+            }
+
+            return null;
         }
     }
 }

@@ -134,14 +134,14 @@ namespace Popcron.Referencer
             }
         }
 
-        public Reference(UnityEngine.Object unityObject, Type type, string name)
+        public Reference(UnityEngine.Object unityObject, Type type, string path)
         {
-            if (name.StartsWith("Assets/"))
+            if (path.StartsWith("Assets/"))
             {
-                name = name.Replace("Assets/", "");
+                path = path.Replace("Assets/", "");
             }
 
-            this.path = name;
+            this.path = path;
             this.unityObject = unityObject;
             this.typeName = type.FullName;
             this.cachedType = type;

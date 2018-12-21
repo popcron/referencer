@@ -31,27 +31,7 @@ namespace Popcron.Referencer
             var scriptableObject = Loader.LoadAssetAtPath(path, Type);
             if (!scriptableObject) return new List<Reference>();
 
-            long? id = null;
-            PropertyInfo property = scriptableObject.GetType().GetProperty("ID");
-            FieldInfo field = scriptableObject.GetType().GetField("id");
-
-            //found id property
-            if (property != null)
-            {
-                object value = property.GetValue(scriptableObject, null);
-                if (value != null)
-                {
-                    id = Convert.ChangeType(value, typeof(long)) as long?;
-                }
-            }
-            else if (field != null)
-            {
-                object value = field.GetValue(scriptableObject);
-                if (value != null)
-                {
-                    id = Convert.ChangeType(value, typeof(long)) as long?;
-                }
-            }
+            long? id = Loader.GetIDFromScriptableObject(scriptableObject as ScriptableObject);
 
             Reference item = new Reference(scriptableObject, scriptableObject.GetType(), path)
             {

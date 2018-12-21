@@ -82,6 +82,7 @@ namespace Popcron.Referencer
         /// <param name="path"></param>
         public static void Remove(string path)
         {
+            path = path.Replace('\\', '/');
             List<Reference> items = Instance.items;
             for (int i = 0; i < items.Count; i++)
             {
@@ -100,6 +101,7 @@ namespace Popcron.Referencer
         /// <returns></returns>
         public static Reference GetReference(string path)
         {
+            path = path.Replace('\\', '/');
             List<Reference> items = Instance.items;
             for (int i = 0; i < items.Count; i++)
             {
@@ -127,6 +129,7 @@ namespace Popcron.Referencer
         /// <returns></returns>
         public static bool Contains(string path)
         {
+            path = path.Replace('\\', '/');
             List<Reference> items = Instance.items;
             for (int i = 0; i < items.Count; i++)
             {
@@ -223,9 +226,10 @@ namespace Popcron.Referencer
         {
             Instance.Cache();
 
-            //name cotains a / so check in path dictionary
-            if (name.IndexOf('/') != -1)
+            //name cotains a / or a \\ so check in path dictionary
+            if (name.IndexOf('/') != -1 || name.IndexOf('\\') != -1)
             {
+                name = name.Replace('\\', '/');
                 if (Instance.pathToItem != null)
                 {
                     if (Instance.pathToItem.TryGetValue(name, out Reference item))
@@ -352,6 +356,37 @@ namespace Popcron.Referencer
             }
 
             Instance.items.Add(item);
+
+            Object unityObject = item.Object;
+            long? id = Loader.GetIDFromScriptableObject(unityObject);
+            Type type = item.Type;
+            string path = item.Path.Replace('\\', '/');
+            string name = Path.GetFileNameWithoutExtension(item.Path);
+            string typeNameAndName = type.FullName + ":" + name;
+
+            if (!Instance.pathToItem.ContainsKey(path))
+            {
+                Instance.pathToItem.Add(path, item);
+            }
+
+            if (!Instance.nameToItem.ContainsKey(typeNameAndName))
+            {
+                Instance.nameToItem.Add(typeNameAndName, item);
+            }
+
+            if (id != null)
+            {
+                string idAndTypeName = id.Value + ":" + type.FullName;
+                if (!Instance.idToItem.ContainsKey(idAndTypeName))
+                {
+                    Instance.idToItem.Add(idAndTypeName, item);
+                }
+            }
+
+            if (!Instance.objectToPath.ContainsKey(unityObject))
+            {
+                Instance.objectToPath.Add(unityObject, path);
+            }
         }
 
         internal void Cache()
@@ -368,7 +403,7 @@ namespace Popcron.Referencer
                         continue;
                     }
 
-                    string key = items[i].Path;
+                    string key = items[i].Path.Replace('\\', '/');
                     if (pathToItem.ContainsKey(key)) continue;
 
                     Reference value = items[i];
@@ -448,8 +483,8 @@ namespace Popcron.Referencer
                     Object key = items[i].Object;
                     if (objectToPath.ContainsKey(key)) continue;
 
-                    Reference value = items[i];
-                    objectToPath.Add(key, items[i].Path);
+                    string value = items[i].Path.Replace('\\', '/');
+                    objectToPath.Add(key, value);
                 }
             }
 
