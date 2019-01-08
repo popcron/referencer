@@ -350,14 +350,15 @@ namespace Popcron.Referencer
         {
             //first check if it already exists
             //if it does, dont add
-            if (Contains(item.Path))
-            {
-                return;
-            }
+            if (Contains(item.Path)) return;
+            
+            //item has no object asset assigned
+            //so dont add it
+            Object unityObject = item.Object;
+            if (unityObject == null) return;
 
             Instance.items.Add(item);
 
-            Object unityObject = item.Object;
             long? id = Loader.GetIDFromScriptableObject(unityObject);
             Type type = item.Type;
             string path = item.Path.Replace('\\', '/');
