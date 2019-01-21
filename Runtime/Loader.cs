@@ -92,9 +92,13 @@ namespace Popcron.Referencer
                         id = Convert.ChangeType(value, typeof(long)) as long?;
                     }
                 }
-            }
 
-            return null;
+                return id;
+            }
+            else
+            {
+                return null;
+            }
         }
     }
 }
