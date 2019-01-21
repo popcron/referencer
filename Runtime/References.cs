@@ -351,12 +351,31 @@ namespace Popcron.Referencer
             //first check if it already exists
             //if it does, dont add
             if (Contains(item.Path)) return;
-            
+
             //item has no object asset assigned
             //so dont add it
             Object unityObject = item.Object;
             if (unityObject == null) return;
 
+            //somehow null?
+            if (Instance.pathToItem == null)
+            {
+                Instance.pathToItem = new Dictionary<string, Reference>();
+            }
+            if (Instance.nameToItem == null)
+            {
+                Instance.nameToItem = new Dictionary<string, Reference>();
+            }
+            if (Instance.idToItem == null)
+            {
+                Instance.idToItem = new Dictionary<string, Reference>();
+            }
+            if (Instance.objectToPath == null)
+            {
+                Instance.objectToPath = new Dictionary<Object, string>();
+            }
+
+            //ok add it
             Instance.items.Add(item);
 
             long? id = Loader.GetIDFromScriptableObject(unityObject);
