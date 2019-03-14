@@ -8,12 +8,12 @@ namespace Popcron.Referencer
 
         private void Awake()
         {
-            references?.Cache();
+            references?.CheckCache();
         }
 
         private void OnEnable()
         {
-            references?.Cache();
+            references?.CheckCache();
         }
     }
 }

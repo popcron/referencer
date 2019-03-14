@@ -150,7 +150,7 @@ namespace Popcron.Referencer
             if (id == null) return null;
 
             string typeName = typeof(T).FullName;
-            Instance.Cache();
+            Instance.CheckCache();
 
             if (Instance.idToItem != null)
             {
@@ -203,7 +203,7 @@ namespace Popcron.Referencer
         /// <returns></returns>
         public static string GetPath(Object value)
         {
-            Instance.Cache();
+            Instance.CheckCache();
 
             if (Instance.objectToPath != null)
             {
@@ -224,7 +224,7 @@ namespace Popcron.Referencer
         /// <returns></returns>
         public static T Get<T>(string name) where T : class
         {
-            Instance.Cache();
+            Instance.CheckCache();
 
             //name cotains a / or a \\ so check in path dictionary
             if (name.IndexOf('/') != -1 || name.IndexOf('\\') != -1)
@@ -283,7 +283,7 @@ namespace Popcron.Referencer
         /// <returns></returns>
         public static List<Object> GetAll(Type type)
         {
-            Instance.Cache();
+            Instance.CheckCache();
 
             List<Object> result = new List<Object>();
             List<Reference> items = Instance.items;
@@ -305,7 +305,7 @@ namespace Popcron.Referencer
         /// <returns></returns>
         public static List<T> GetAll<T>() where T : class
         {
-            Instance.Cache();
+            Instance.CheckCache();
 
             List<T> result = new List<T>();
             List<Reference> items = Instance.items;
@@ -320,6 +320,23 @@ namespace Popcron.Referencer
             return result;
         }
 
+        public static List<Reference> GetAllReferencesWithIDs()
+        {
+            Instance.CheckCache();
+
+            List<Reference> result = new List<Reference>();
+            List<Reference> items = Instance.items;
+            for (int i = 0; i < items.Count; i++)
+            {
+                if (items[i].ID.HasValue)
+                {
+                    result.Add(items[i]);
+                }
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Returns all raw references of a type.
         /// </summary>
@@ -327,7 +344,7 @@ namespace Popcron.Referencer
         /// <returns></returns>
         public static List<Reference> GetAllReferences<T>() where T : class
         {
-            Instance.Cache();
+            Instance.CheckCache();
 
             List<Reference> result = new List<Reference>();
             List<Reference> items = Instance.items;
@@ -409,7 +426,7 @@ namespace Popcron.Referencer
             }
         }
 
-        internal void Cache()
+        internal void CheckCache()
         {
             bool queueRefresh = false;
             if (pathToItem == null)

@@ -1,7 +1,7 @@
 {
     "name": "com.popcron.referencer",
-    "displayName": "Popcron.Referencer",
-    "version": "0.0.1",
-    "unity": "2018.3.0f1",
+    "displayName": "Popcron Referencer",
+    "version": "0.1.0",
+    "unity": "2018.3.0f2",
     "description": "Quick referencer utility."
 }

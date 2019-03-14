@@ -14,17 +14,17 @@ namespace Popcron.Referencer
             //first clear
             References.Clear();
 
-            var loaders = AssetLoader.Loaders;
+            List<AssetLoader> loaders = AssetLoader.Loaders;
             if (loaders.Count == 0)
             {
                 Debug.LogError("No loaders found");
             }
 
             //then loop though all loaders and load the assets of their types
-            foreach (var loader in loaders)
+            foreach (AssetLoader loader in loaders)
             {
                 List<Reference> items = loader.LoadAll();
-                foreach (var item in items)
+                foreach (Reference item in items)
                 {
                     References.Add(item);
                 }
@@ -58,12 +58,24 @@ namespace Popcron.Referencer
         private static void Add(string path)
         {
             Type type = AssetDatabase.GetMainAssetTypeAtPath(path);
+
+            //if a sprite was edited, also try to load using a sprite loader
+            if (type == typeof(Texture2D))
+            {
+                Add(path, typeof(Sprite));
+            }
+
+            Add(path, type);
+        }
+
+        private static void Add(string path, Type type)
+        {
             AssetLoader loader = AssetLoader.Get(type);
             if (loader != null)
             {
                 path = path.Replace("Assets/", "");
                 List<Reference> items = loader.Load(path);
-                foreach (var item in items)
+                foreach (Reference item in items)
                 {
                     References.Add(item);
                 }
@@ -81,7 +93,7 @@ namespace Popcron.Referencer
             oldPath = oldPath.Replace("Assets/", "");
             newPath = newPath.Replace("Assets/", "");
 
-            var item = References.GetReference(oldPath);
+            Reference item = References.GetReference(oldPath);
             if (item != null) item.Path = newPath;
         }
 
