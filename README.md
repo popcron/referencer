@@ -12,8 +12,6 @@ If using 2018.3.x, you can add a new entry to the manifest.json file in your Pac
 "com.popcron.referencer": "https://github.com/popcron/referencer.git"
 ```
 
-On first fresh loads, you might have to load all assets using the `Popcron/Referencer/Load all` menu item.
-
 ## Example
 ```cs
 using UnityEngine;
