@@ -4,9 +4,9 @@ using UnityEngine;
 
 namespace Popcron.Referencer
 {
-    public class PrefabLoader : AssetLoader
+    public class MeshLoader : AssetLoader
     {
-        public override Type Type => typeof(GameObject);
+        public override Type Type => typeof(Mesh);
 
         public override List<Reference> LoadAll()
         {
@@ -27,17 +27,16 @@ namespace Popcron.Referencer
 
         public override List<Reference> Load(string path)
         {
-            Mesh mesh = (Mesh)Loader.LoadAssetAtPath(path, typeof(Mesh));
-            var prefab = Loader.LoadAssetAtPath(path, Type);
-
-            //a mesh exists here, so dont load it
-            if (mesh && prefab)
+            UnityEngine.Object[] meshes = Loader.LoadAllAssetsAtPath(path);
+            List<Reference> items = new List<Reference>();
+            for (int i = 0; i < meshes.Length; i++)
             {
-                return new List<Reference>();
+                string pathToMesh = path + "/" + meshes[i].name;
+                Reference item = new Reference(meshes[i] as Mesh, Type, pathToMesh);
+                items.Add(item);
             }
 
-            Reference item = new Reference(prefab, Type, path);
-            return new List<Reference>() { item };
+            return items;
         }
     }
 }

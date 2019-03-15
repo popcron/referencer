@@ -149,7 +149,7 @@ namespace Popcron.Referencer
 
         public static implicit operator Reference(string path)
         {
-            List<Reference> items = References.Instance.items;
+            List<Reference> items = References.Instance.builtin;
             for (int i = 0; i < items.Count; i++)
             {
                 if (items[i].Path == path)
@@ -163,7 +163,7 @@ namespace Popcron.Referencer
 
         public static implicit operator Reference(long id)
         {
-            List<Reference> items = References.Instance.items;
+            List<Reference> items = References.Instance.builtin;
             for (int i = 0; i < items.Count; i++)
             {
                 if (items[i].ID == null) continue;
