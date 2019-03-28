@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
@@ -128,6 +129,15 @@ namespace Popcron.Referencer
             //remove these assets
             foreach (string path in deletedAssets)
             {
+                //if the deleted file is the references asset itself
+                //then do a full reload
+                if (path == settings.referencesAssetPath)
+                {
+                    Debug.Log("References asset was deleted. Reloading all assets.");
+                    LoadAll();
+                    return;
+                }
+
                 if (settings.ShouldIgnorePath(path)) continue;
 
                 Remove(path);
