@@ -14,43 +14,33 @@ If using 2018.3.x, you can add a new entry to the manifest.json file in your Pac
 
 ## Example
 ```cs
-using UnityEngine;
-using Popcron.Referencer;
+//load using an absolute path
+playerSprite = Referencer.Get<Sprite>("Art/Sprites/Player.psd/Player_0");
 
-public class Player : MonoBehaviour
-{
-    private Sprite playerSprite;
-    private Sprite gunSprite;
-    
-    private void Awake()
-    {
-        //load using an absolute path
-        playerSprite = Referencer.Get<Sprite>("Art/Sprites/Player.psd/Player_0");
-        
-        //load using just the name, if there are duplicates it will find the first one
-        gunSprite = Referencer.Get<Sprite>("GunSprite");
-        
-        //returns all scriptable objects of type Gun
-        List<Gun> allGuns = Referencer.GetAll<Gun>();
-        //List<Gun> allGuns = Referencer.GetAll(typeof(Gun));
-        
-        //gets the original path of the sprite asset
-        string path = Referencer.GetPath(gunSprite);
-        
-        //returns a random gun
-        Gun randomGun = Referencer.GetRandom<Gun>();
-    }
-}
+//load using just the name, if there are duplicates it will find the first one
+gunSprite = Referencer.Get<Sprite>("GunSprite");
+
+//returns all scriptable objects of type Gun
+List<Gun> allGuns = Referencer.GetAll<Gun>();
+//List<Gun> allGuns = Referencer.GetAll(typeof(Gun));
+
+//gets the original path of the sprite asset
+string path = Referencer.GetPath(gunSprite);
+
+//returns a random gun
+Gun randomGun = Referencer.GetRandom<Gun>();
 ```
 
 ## Loaders
 This package contains loaders for the follwing types:
-- AudioClip
-- Font
-- Material
-- GameObject (Prefabs)
-- ScriptableObject
-- Sprite
+- AudioClips
+- Fonts
+- Materials
+- GameObjects (Prefabs)
+- Meshes
+- ScriptableObjects
+- Sprite and Sprite sub assets
+- Textures
 
 To create a custom loader, you can inherit from the `AssetLoader` type. For an example, see the loaders provided for the listed types in the Loaders folder.
 
