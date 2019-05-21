@@ -56,6 +56,11 @@ namespace Popcron.Referencer
         {
             RefreshCache(false);
 
+            if (type == null)
+            {
+                return null;    
+            }
+            
             if (type.IsSubclassOf(typeof(ScriptableObject)))
             {
                 type = typeof(ScriptableObject);
