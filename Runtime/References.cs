@@ -562,7 +562,7 @@ namespace Popcron.Referencer
 					}
 					else
 					{
-						Debug.LogWarning(builtin[i].Object?.name + " has no path. Not adding to reference list.");
+						Debug.LogWarning(builtin[i]?.Object?.name + " has no path. Not adding to reference list.");
 					}
                 }
 
@@ -585,7 +585,7 @@ namespace Popcron.Referencer
 					}
 					else
 					{
-						Debug.LogWarning(custom[i].Object?.name + " has no path. Not adding to reference list.");
+						Debug.LogWarning(custom[i]?.Object?.name + " has no path. Not adding to reference list.");
 					}
                 }
             }
@@ -619,7 +619,7 @@ namespace Popcron.Referencer
 					}
 					else
 					{
-						Debug.LogWarning(builtin[i].Object?.name + " has no path. Not adding to reference list.");
+						Debug.LogWarning(builtin[i]?.Object?.name + " has no path. Not adding to reference list.");
 					}
 				}
 
@@ -649,7 +649,7 @@ namespace Popcron.Referencer
 					}
 					else
 					{
-						Debug.LogWarning(custom[i].Object?.name + " has no path. Not adding to reference list.");
+						Debug.LogWarning(custom[i]?.Object?.name + " has no path. Not adding to reference list.");
 					}
                 }
             }
@@ -689,7 +689,7 @@ namespace Popcron.Referencer
 					}
 					else
 					{
-						Debug.LogWarning(builtin[i].Object?.name + " has no path. Not adding to reference list.");
+						Debug.LogWarning(builtin[i]?.Object?.name + " has no path. Not adding to reference list.");
 					}
 				}
 
@@ -725,7 +725,7 @@ namespace Popcron.Referencer
 					}
 					else
 					{
-						Debug.LogWarning(custom[i].Object?.name + " has no path. Not adding to reference list.");
+						Debug.LogWarning(custom[i]?.Object?.name + " has no path. Not adding to reference list.");
 					}
 				}
             }
@@ -750,10 +750,6 @@ namespace Popcron.Referencer
 						string value = builtin[i].Path.Replace('\\', '/');
 						objectToPath.Add(key, value);
 					}
-					else
-					{
-						Debug.LogWarning(builtin[i].Object?.name + " has no path. Not adding to reference list.");
-					}
 				}
 
                 //custom
@@ -772,10 +768,6 @@ namespace Popcron.Referencer
 
 						string value = custom[i].Path.Replace('\\', '/');
 						objectToPath.Add(key, value);
-					}
-					else
-					{
-						Debug.LogWarning(custom[i].Object?.name + " has no path. Not adding to reference list.");
 					}
                 }
             }
