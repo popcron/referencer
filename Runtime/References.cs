@@ -562,7 +562,7 @@ namespace Popcron.Referencer
 					}
 					else
 					{
-						Debug.LogWarning(custom[i].Object?.name + " has no path. Not adding to reference list.");
+						Debug.LogWarning(builtin[i].Object?.name + " has no path. Not adding to reference list.");
 					}
                 }
 
@@ -610,11 +610,18 @@ namespace Popcron.Referencer
                     }
 
                     string key = type.FullName + ":" + Path.GetFileNameWithoutExtension(builtin[i].Path);
-                    if (nameToItem.ContainsKey(key)) continue;
+                    if (!string.IsNullOrEmpty(key))
+					{
+						if (nameToItem.ContainsKey(key)) continue;
 
-                    Reference value = builtin[i];
-                    nameToItem.Add(key, builtin[i]);
-                }
+						Reference value = builtin[i];
+						nameToItem.Add(key, builtin[i]);
+					}
+					else
+					{
+						Debug.LogWarning(builtin[i].Object?.name + " has no path. Not adding to reference list.");
+					}
+				}
 
                 //custom
                 for (int i = 0; i < custom.Count; i++)
@@ -633,10 +640,17 @@ namespace Popcron.Referencer
                     }
 
                     string key = type.FullName + ":" + Path.GetFileNameWithoutExtension(custom[i].Path);
-                    if (nameToItem.ContainsKey(key)) continue;
+                    if (!string.IsNullOrEmpty(key))
+					{
+						if (nameToItem.ContainsKey(key)) continue;
 
-                    Reference value = custom[i];
-                    nameToItem.Add(key, custom[i]);
+						Reference value = custom[i];
+						nameToItem.Add(key, custom[i]);
+					}
+					else
+					{
+						Debug.LogWarning(custom[i].Object?.name + " has no path. Not adding to reference list.");
+					}
                 }
             }
 
@@ -666,11 +680,18 @@ namespace Popcron.Referencer
                     }
 
                     string key = id.Value + ":" + type.FullName;
-                    if (idToItem.ContainsKey(key)) continue;
+                    if (!string.IsNullOrEmpty(key))
+					{
+						if (idToItem.ContainsKey(key)) continue;
 
-                    Reference value = builtin[i];
-                    idToItem.Add(key, builtin[i]);
-                }
+						Reference value = builtin[i];
+						idToItem.Add(key, builtin[i]);
+					}
+					else
+					{
+						Debug.LogWarning(builtin[i].Object?.name + " has no path. Not adding to reference list.");
+					}
+				}
 
                 //custom
                 for (int i = 0; i < custom.Count; i++)
@@ -695,11 +716,18 @@ namespace Popcron.Referencer
                     }
 
                     string key = id.Value + ":" + type.FullName;
-                    if (idToItem.ContainsKey(key)) continue;
+					if (!string.IsNullOrEmpty(key))
+					{
+						if (idToItem.ContainsKey(key)) continue;
 
-                    Reference value = custom[i];
-                    idToItem.Add(key, custom[i]);
-                }
+						Reference value = custom[i];
+						idToItem.Add(key, custom[i]);
+					}
+					else
+					{
+						Debug.LogWarning(custom[i].Object?.name + " has no path. Not adding to reference list.");
+					}
+				}
             }
 
             if (objectToPath == null)
@@ -715,11 +743,18 @@ namespace Popcron.Referencer
                     }
 
                     Object key = builtin[i].Object;
-                    if (objectToPath.ContainsKey(key)) continue;
+                    if (key)
+					{
+						if (objectToPath.ContainsKey(key)) continue;
 
-                    string value = builtin[i].Path.Replace('\\', '/');
-                    objectToPath.Add(key, value);
-                }
+						string value = builtin[i].Path.Replace('\\', '/');
+						objectToPath.Add(key, value);
+					}
+					else
+					{
+						Debug.LogWarning(builtin[i].Object?.name + " has no path. Not adding to reference list.");
+					}
+				}
 
                 //custom
                 for (int i = 0; i < custom.Count; i++)
@@ -731,10 +766,17 @@ namespace Popcron.Referencer
                     }
 
                     Object key = custom[i].Object;
-                    if (objectToPath.ContainsKey(key)) continue;
+                    if (key)
+					{
+						if (objectToPath.ContainsKey(key)) continue;
 
-                    string value = custom[i].Path.Replace('\\', '/');
-                    objectToPath.Add(key, value);
+						string value = custom[i].Path.Replace('\\', '/');
+						objectToPath.Add(key, value);
+					}
+					else
+					{
+						Debug.LogWarning(custom[i].Object?.name + " has no path. Not adding to reference list.");
+					}
                 }
             }
 
