@@ -468,7 +468,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Adds an item to the list of references manually.
         /// </summary>
-        /// <param name="item"></param>
         public static void Add(Reference item)
         {
             //first check if it already exists
@@ -555,10 +554,16 @@ namespace Popcron.Referencer
                     }
 
                     string key = builtin[i].Path.Replace('\\', '/');
-                    if (pathToItem.ContainsKey(key)) continue;
-
-                    Reference value = builtin[i];
-                    pathToItem.Add(key, builtin[i]);
+                    if (!string.IsNullOrEmpty(key))
+					{
+						if (pathToItem.ContainsKey(key)) continue;
+						Reference value = builtin[i];
+						pathToItem.Add(key, builtin[i]);
+					}
+					else
+					{
+						Debug.LogWarning(custom[i].Object?.name + " has no path. Not adding to reference list.");
+					}
                 }
 
                 //custom
@@ -571,10 +576,17 @@ namespace Popcron.Referencer
                     }
 
                     string key = custom[i].Path.Replace('\\', '/');
-                    if (pathToItem.ContainsKey(key)) continue;
+                    if (!string.IsNullOrEmpty(key))
+					{
+						if (pathToItem.ContainsKey(key)) continue;
 
-                    Reference value = custom[i];
-                    pathToItem.Add(key, custom[i]);
+						Reference value = custom[i];
+						pathToItem.Add(key, custom[i]);
+					}
+					else
+					{
+						Debug.LogWarning(custom[i].Object?.name + " has no path. Not adding to reference list.");
+					}
                 }
             }
 
