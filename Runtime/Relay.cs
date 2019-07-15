@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Reflection;
 using System.Collections.Generic;
-
-using UnityEngine;
+using System.Reflection;
 using Object = UnityEngine.Object;
 
 namespace Popcron.Referencer
 {
+    //this class relays method class to the Helper class in the editor assembly
     internal class Relay
     {
         private static Type helperType = null;
@@ -48,7 +47,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Creates a Reference asset
         /// </summary>
-        /// <returns></returns>
         internal static References CreateReferencesFile()
         {
             Type helper = HelperType;
@@ -64,11 +62,19 @@ namespace Popcron.Referencer
             }
         }
 
+        internal static void LoadAll()
+        {
+            Type helper = HelperType;
+            if (helper != null)
+            {
+                MethodInfo method = helper.GetMethod("LoadAll");
+                method.Invoke(null, null);
+            }
+        }
+
         /// <summary>
         /// Returns asset paths of this type
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         internal static List<string> FindAssets<T>() where T : class
         {
             string filter = string.Format("t:{0}", typeof(T));
@@ -78,8 +84,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns asset paths with this filter as a search query
         /// </summary>
-        /// <param name="filter"></param>
-        /// <returns></returns>
         internal static List<string> FindAssets(string filter)
         {
             Type helper = HelperType;
@@ -97,9 +101,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns an object from a path
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="path"></param>
-        /// <returns></returns>
         internal static T LoadAssetAtPath<T>(string path) where T : class
         {
             return LoadAssetAtPath(path, typeof(T)) as T;
@@ -108,9 +109,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns an object from a path using type
         /// </summary>
-        /// <param name="path"></param>
-        /// <param name="type"></param>
-        /// <returns></returns>
         internal static Object LoadAssetAtPath(string path, Type type)
         {
             Type helper = HelperType;
@@ -128,8 +126,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns all objects at the path
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
         internal static Object[] LoadAllAssetsAtPath(string path)
         {
             Type helper = HelperType;

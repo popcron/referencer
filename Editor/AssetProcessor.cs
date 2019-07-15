@@ -1,7 +1,5 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,27 +10,7 @@ namespace Popcron.Referencer
         [MenuItem("Popcron/Referencer/Load all")]
         public static void LoadAll()
         {
-            //first clear
-            References.Clear();
-
-            List<AssetLoader> loaders = AssetLoader.Loaders;
-            if (loaders.Count == 0)
-            {
-                Debug.LogError("No loaders found");
-            }
-
-            //then loop though all loaders and load the assets of their types
-            foreach (AssetLoader loader in loaders)
-            {
-                List<Reference> items = loader.LoadAll();
-                foreach (Reference item in items)
-                {
-                    References.Add(item);
-                }
-            }
-
-            //mark as dirty
-            Helper.DirtyReferences();
+            Helper.LoadAll();
         }
 
         [MenuItem("Popcron/Referencer/Clear")]

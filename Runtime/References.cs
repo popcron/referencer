@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using UnityEngine;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
 
 namespace Popcron.Referencer
 {
-    using Random = System.Random;
     using Object = UnityEngine.Object;
+    using Random = System.Random;
 
     public class References : ScriptableObject
     {
@@ -170,9 +169,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns an object with a matching ID field or property.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="id"></param>
-        /// <returns></returns>
         public static T Get<T>(long? id) where T : class
         {
             if (id == null) return null;
@@ -219,8 +215,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns a random object of a type.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public static T GetRandom<T>() where T : class
         {
             List<T> list = GetAll<T>();
@@ -236,8 +230,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns the path of an object. It will return null if the object isnt tracked.
         /// </summary>
-        /// <param name="value"></param>
-        /// <returns></returns>
         public static string GetPath(Object value)
         {
             Instance.CheckCache();
@@ -256,9 +248,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns an object with using the name or path.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="name"></param>
-        /// <returns></returns>
         public static T Get<T>(string name) where T : class
         {
             Instance.CheckCache();
@@ -341,8 +330,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns all objecst of a type.
         /// </summary>
-        /// <param name="type"></param>
-        /// <returns></returns>
         public static List<Object> GetAll(Type type, bool customOnly = false)
         {
             Instance.CheckCache();
@@ -375,8 +362,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns all objects of a type.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public static List<T> GetAll<T>(bool customOnly = false) where T : class
         {
             Instance.CheckCache();
@@ -436,8 +421,6 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns all raw references of a type.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
         public static List<Reference> GetAllReferences<T>() where T : class
         {
             Instance.CheckCache();
@@ -497,8 +480,18 @@ namespace Popcron.Referencer
                 Instance.objectToPath = new Dictionary<Object, string>();
             }
 
-            //ok add it
-            if (Application.isPlaying)
+            long? id = Loader.GetIDFromScriptableObject(unityObject);
+            Type type = item.Type;
+            string path = item.Path.Replace('\\', '/');
+            string name = Path.GetFileNameWithoutExtension(item.Path);
+            string typeNameAndName = type.FullName + ":" + name;
+
+            //load this asset into customs if the game is running and the asset is from the Game folder
+            bool addToCustom = Application.isPlaying;
+#if UNITY_EDITOR
+            addToCustom &= item.Path.IndexOf("Assets/Game") != -1;
+#endif
+            if (addToCustom)
             {
                 Instance.custom.Add(item);
             }
@@ -507,12 +500,7 @@ namespace Popcron.Referencer
                 Instance.builtin.Add(item);
             }
 
-            long? id = Loader.GetIDFromScriptableObject(unityObject);
-            Type type = item.Type;
-            string path = item.Path.Replace('\\', '/');
-            string name = Path.GetFileNameWithoutExtension(item.Path);
-            string typeNameAndName = type.FullName + ":" + name;
-
+            //add to dictionaries
             if (!Instance.pathToItem.ContainsKey(path))
             {
                 Instance.pathToItem.Add(path, item);
@@ -544,6 +532,7 @@ namespace Popcron.Referencer
             if (pathToItem == null)
             {
                 pathToItem = new Dictionary<string, Reference>();
+
                 //built in
                 for (int i = 0; i < builtin.Count; i++)
                 {
@@ -555,15 +544,15 @@ namespace Popcron.Referencer
 
                     string key = builtin[i].Path.Replace('\\', '/');
                     if (!string.IsNullOrEmpty(key))
-					{
-						if (pathToItem.ContainsKey(key)) continue;
-						Reference value = builtin[i];
-						pathToItem.Add(key, builtin[i]);
-					}
-					else
-					{
-						Debug.LogWarning(builtin[i]?.Object?.name + " has no path. Not adding to reference list.");
-					}
+                    {
+                        if (pathToItem.ContainsKey(key)) continue;
+                        Reference value = builtin[i];
+                        pathToItem.Add(key, builtin[i]);
+                    }
+                    else
+                    {
+                        Debug.LogWarning(builtin[i]?.Object?.name + " has no path. Not adding to reference list.");
+                    }
                 }
 
                 //custom
@@ -577,22 +566,23 @@ namespace Popcron.Referencer
 
                     string key = custom[i].Path.Replace('\\', '/');
                     if (!string.IsNullOrEmpty(key))
-					{
-						if (pathToItem.ContainsKey(key)) continue;
+                    {
+                        if (pathToItem.ContainsKey(key)) continue;
 
-						Reference value = custom[i];
-						pathToItem.Add(key, custom[i]);
-					}
-					else
-					{
-						Debug.LogWarning(custom[i]?.Object?.name + " has no path. Not adding to reference list.");
-					}
+                        Reference value = custom[i];
+                        pathToItem.Add(key, custom[i]);
+                    }
+                    else
+                    {
+                        Debug.LogWarning(custom[i]?.Object?.name + " has no path. Not adding to reference list.");
+                    }
                 }
             }
 
             if (nameToItem == null)
             {
                 nameToItem = new Dictionary<string, Reference>();
+
                 //built in
                 for (int i = 0; i < builtin.Count; i++)
                 {
@@ -611,17 +601,17 @@ namespace Popcron.Referencer
 
                     string key = type.FullName + ":" + Path.GetFileNameWithoutExtension(builtin[i].Path);
                     if (!string.IsNullOrEmpty(key))
-					{
-						if (nameToItem.ContainsKey(key)) continue;
+                    {
+                        if (nameToItem.ContainsKey(key)) continue;
 
-						Reference value = builtin[i];
-						nameToItem.Add(key, builtin[i]);
-					}
-					else
-					{
-						Debug.LogWarning(builtin[i]?.Object?.name + " has no path. Not adding to reference list.");
-					}
-				}
+                        Reference value = builtin[i];
+                        nameToItem.Add(key, builtin[i]);
+                    }
+                    else
+                    {
+                        Debug.LogWarning(builtin[i]?.Object?.name + " has no path. Not adding to reference list.");
+                    }
+                }
 
                 //custom
                 for (int i = 0; i < custom.Count; i++)
@@ -641,22 +631,23 @@ namespace Popcron.Referencer
 
                     string key = type.FullName + ":" + Path.GetFileNameWithoutExtension(custom[i].Path);
                     if (!string.IsNullOrEmpty(key))
-					{
-						if (nameToItem.ContainsKey(key)) continue;
+                    {
+                        if (nameToItem.ContainsKey(key)) continue;
 
-						Reference value = custom[i];
-						nameToItem.Add(key, custom[i]);
-					}
-					else
-					{
-						Debug.LogWarning(custom[i]?.Object?.name + " has no path. Not adding to reference list.");
-					}
+                        Reference value = custom[i];
+                        nameToItem.Add(key, custom[i]);
+                    }
+                    else
+                    {
+                        Debug.LogWarning(custom[i]?.Object?.name + " has no path. Not adding to reference list.");
+                    }
                 }
             }
 
             if (idToItem == null)
             {
                 idToItem = new Dictionary<string, Reference>();
+
                 //built in
                 for (int i = 0; i < builtin.Count; i++)
                 {
@@ -681,17 +672,17 @@ namespace Popcron.Referencer
 
                     string key = id.Value + ":" + type.FullName;
                     if (!string.IsNullOrEmpty(key))
-					{
-						if (idToItem.ContainsKey(key)) continue;
+                    {
+                        if (idToItem.ContainsKey(key)) continue;
 
-						Reference value = builtin[i];
-						idToItem.Add(key, builtin[i]);
-					}
-					else
-					{
-						Debug.LogWarning(builtin[i]?.Object?.name + " has no path. Not adding to reference list.");
-					}
-				}
+                        Reference value = builtin[i];
+                        idToItem.Add(key, builtin[i]);
+                    }
+                    else
+                    {
+                        Debug.LogWarning(builtin[i]?.Object?.name + " has no path. Not adding to reference list.");
+                    }
+                }
 
                 //custom
                 for (int i = 0; i < custom.Count; i++)
@@ -716,23 +707,24 @@ namespace Popcron.Referencer
                     }
 
                     string key = id.Value + ":" + type.FullName;
-					if (!string.IsNullOrEmpty(key))
-					{
-						if (idToItem.ContainsKey(key)) continue;
+                    if (!string.IsNullOrEmpty(key))
+                    {
+                        if (idToItem.ContainsKey(key)) continue;
 
-						Reference value = custom[i];
-						idToItem.Add(key, custom[i]);
-					}
-					else
-					{
-						Debug.LogWarning(custom[i]?.Object?.name + " has no path. Not adding to reference list.");
-					}
-				}
+                        Reference value = custom[i];
+                        idToItem.Add(key, custom[i]);
+                    }
+                    else
+                    {
+                        Debug.LogWarning(custom[i]?.Object?.name + " has no path. Not adding to reference list.");
+                    }
+                }
             }
 
             if (objectToPath == null)
             {
                 objectToPath = new Dictionary<Object, string>();
+
                 //built in
                 for (int i = 0; i < builtin.Count; i++)
                 {
@@ -744,13 +736,13 @@ namespace Popcron.Referencer
 
                     Object key = builtin[i].Object;
                     if (key)
-					{
-						if (objectToPath.ContainsKey(key)) continue;
+                    {
+                        if (objectToPath.ContainsKey(key)) continue;
 
-						string value = builtin[i].Path.Replace('\\', '/');
-						objectToPath.Add(key, value);
-					}
-				}
+                        string value = builtin[i].Path.Replace('\\', '/');
+                        objectToPath.Add(key, value);
+                    }
+                }
 
                 //custom
                 for (int i = 0; i < custom.Count; i++)
@@ -763,12 +755,12 @@ namespace Popcron.Referencer
 
                     Object key = custom[i].Object;
                     if (key)
-					{
-						if (objectToPath.ContainsKey(key)) continue;
+                    {
+                        if (objectToPath.ContainsKey(key)) continue;
 
-						string value = custom[i].Path.Replace('\\', '/');
-						objectToPath.Add(key, value);
-					}
+                        string value = custom[i].Path.Replace('\\', '/');
+                        objectToPath.Add(key, value);
+                    }
                 }
             }
 

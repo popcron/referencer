@@ -39,6 +39,33 @@ namespace Popcron.Referencer
             return references;
         }
 
+        public static void LoadAll()
+        {
+            //first clear
+            References.Clear();
+
+            List<AssetLoader> loaders = AssetLoader.Loaders;
+            if (loaders.Count == 0)
+            {
+                Debug.LogError("No loaders found");
+            }
+
+            //then loop though all loaders and load the assets of their types
+            for (int loaderIndex = 0; loaderIndex < loaders.Count; loaderIndex++)
+            {
+                AssetLoader loader = loaders[loaderIndex];
+                List<Reference> items = loader.LoadAll();
+                for (int itemIndex = 0; itemIndex < items.Count; itemIndex++)
+                {
+                    Reference item = items[itemIndex];
+                    References.Add(item);
+                }
+            }
+
+            //mark as dirty
+            Helper.DirtyReferences();
+        }
+
         public static List<string> FindAssets(string filter)
         {
             List<string> paths = new List<string>();
