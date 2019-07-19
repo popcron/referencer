@@ -180,7 +180,7 @@ namespace Popcron.Referencer
                 {
                     if (item.Type == type)
                     {
-                        return item.Object as T;
+                        return item.Object;
                     }
                     else
                     {
