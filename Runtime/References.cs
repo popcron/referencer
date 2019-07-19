@@ -281,9 +281,9 @@ namespace Popcron.Referencer
                 {
                     if (Instance.pathToItem.TryGetValue(name, out Reference item))
                     {
-                        if (item.Type == typeof(T))
+                        if (item.Type == type)
                         {
-                            return item.Object as T;
+                            return item.Object;
                         }
                         else
                         {
@@ -296,11 +296,11 @@ namespace Popcron.Referencer
             {
                 if (Instance.nameToItem != null)
                 {
-                    if (Instance.nameToItem.TryGetValue(typeof(T).FullName + ":" + name, out Reference item))
+                    if (Instance.nameToItem.TryGetValue(type.FullName + ":" + name, out Reference item))
                     {
-                        if (item.Type == typeof(T))
+                        if (item.Type == type)
                         {
-                            return item.Object as T;
+                            return item.Object;
                         }
                         else
                         {
@@ -314,18 +314,18 @@ namespace Popcron.Referencer
             List<Reference> items = Instance.builtin;
             for (int i = 0; i < items.Count; i++)
             {
-                if (items[i].Path == name && items[i].Type == typeof(T))
+                if (items[i].Path == name && items[i].Type == type)
                 {
-                    return items[i].Object as T;
+                    return items[i].Object;
                 }
             }
 
             items = Instance.custom;
             for (int i = 0; i < items.Count; i++)
             {
-                if (items[i].Path == name && items[i].Type == typeof(T))
+                if (items[i].Path == name && items[i].Type == type)
                 {
-                    return items[i].Object as T;
+                    return items[i].Object;
                 }
             }
 
