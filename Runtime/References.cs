@@ -169,18 +169,16 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns an object with a matching ID field or property.
         /// </summary>
-        public static T Get<T>(long? id) where T : class
+        public static Object Get(Type type, long id)
         {
-            if (id == null) return null;
-
-            string typeName = typeof(T).FullName;
+            string typeName = type.FullName;
             Instance.CheckCache();
 
             if (Instance.idToItem != null)
             {
                 if (Instance.idToItem.TryGetValue(id + ":" + typeName, out Reference item))
                 {
-                    if (item.Type == typeof(T))
+                    if (item.Type == type)
                     {
                         return item.Object as T;
                     }
@@ -194,22 +192,45 @@ namespace Popcron.Referencer
             List<Reference> items = Instance.builtin;
             for (int i = 0; i < items.Count; i++)
             {
-                if (items[i].ID == id && items[i].Type == typeof(T))
+                if (items[i].ID == id && items[i].Type == type)
                 {
-                    return items[i].Object as T;
+                    return items[i].Object;
                 }
             }
 
             items = Instance.custom;
             for (int i = 0; i < items.Count; i++)
             {
-                if (items[i].ID == id && items[i].Type == typeof(T))
+                if (items[i].ID == id && items[i].Type == type)
                 {
-                    return items[i].Object as T;
+                    return items[i].Object;
                 }
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns an object with a matching ID field or property.
+        /// </summary>
+        public static T Get<T>(long id) where T : class
+        {
+            return Get(typeof(T), id) as T;
+        }
+
+        /// <summary>
+        /// Returns a random object of a type.
+        /// </summary>
+        public static Object GetRandom(Type type)
+        {
+            List<Object> list = GetAll(type);
+
+            if (list.Count == 0) return null;
+            if (list.Count == 1) return list[1];
+
+            random = random ?? new Random();
+
+            return list[random.Next(list.Count)];
         }
 
         /// <summary>
@@ -248,7 +269,7 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns an object with using the name or path.
         /// </summary>
-        public static T Get<T>(string name) where T : class
+        public static Object Get(Type type, string name)
         {
             Instance.CheckCache();
 
@@ -309,6 +330,14 @@ namespace Popcron.Referencer
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns an object with using the name or path.
+        /// </summary>
+        public static T Get<T>(string name) where T : class
+        {
+            return Get(typeof(T), name) as T;
         }
 
         public static List<Reference> GetAll(bool customOnly = false)
