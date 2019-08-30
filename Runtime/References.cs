@@ -79,9 +79,8 @@ namespace Popcron.Referencer
         private Dictionary<Object, string> objectToPath = null;
 
         /// <summary>
-        /// Removes a reference at this path
+        /// Removes a reference at this path.
         /// </summary>
-        /// <param name="path"></param>
         public static void Remove(string path)
         {
             path = path.Replace('\\', '/');
@@ -97,10 +96,8 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
-        /// Returns a raw reference item using a path
+        /// Returns a raw reference item using a path.
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
         public static Reference GetReference(string path)
         {
             path = path.Replace('\\', '/');
@@ -129,7 +126,7 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
-        /// Clears the entire reference list
+        /// Clears the entire reference list.
         /// </summary>
         public static void Clear()
         {
@@ -144,10 +141,8 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
-        /// Returns true if an object with this path exists
+        /// Returns true if an object with this path exists.
         /// </summary>
-        /// <param name="path"></param>
-        /// <returns></returns>
         public static bool Contains(string path)
         {
             path = path.Replace('\\', '/');
@@ -350,7 +345,7 @@ namespace Popcron.Referencer
             }
             else
             {
-                List<Reference> items = Instance.builtin;
+                List<Reference> items = new List<Reference>(Instance.builtin);
                 items.AddRange(Instance.custom);
                 return items;
             }
@@ -484,12 +479,18 @@ namespace Popcron.Referencer
         {
             //first check if it already exists
             //if it does, dont add
-            if (Contains(item.Path)) return;
+            if (Contains(item.Path))
+            {
+                return;
+            }
 
             //item has no object asset assigned
             //so dont add it
             Object unityObject = item.Object;
-            if (unityObject == null) return;
+            if (!unityObject)
+            {
+                return;
+            }
 
             //somehow null?
             if (Instance.pathToItem == null)
@@ -574,8 +575,11 @@ namespace Popcron.Referencer
                     string key = builtin[i].Path.Replace('\\', '/');
                     if (!string.IsNullOrEmpty(key))
                     {
-                        if (pathToItem.ContainsKey(key)) continue;
-                        Reference value = builtin[i];
+                        if (pathToItem.ContainsKey(key))
+                        {
+                            continue;
+                        }
+
                         pathToItem.Add(key, builtin[i]);
                     }
                     else
@@ -596,9 +600,11 @@ namespace Popcron.Referencer
                     string key = custom[i].Path.Replace('\\', '/');
                     if (!string.IsNullOrEmpty(key))
                     {
-                        if (pathToItem.ContainsKey(key)) continue;
+                        if (pathToItem.ContainsKey(key))
+                        {
+                            continue;
+                        }
 
-                        Reference value = custom[i];
                         pathToItem.Add(key, custom[i]);
                     }
                     else
@@ -631,9 +637,11 @@ namespace Popcron.Referencer
                     string key = type.FullName + ":" + Path.GetFileNameWithoutExtension(builtin[i].Path);
                     if (!string.IsNullOrEmpty(key))
                     {
-                        if (nameToItem.ContainsKey(key)) continue;
+                        if (nameToItem.ContainsKey(key))
+                        {
+                            continue;
+                        }
 
-                        Reference value = builtin[i];
                         nameToItem.Add(key, builtin[i]);
                     }
                     else
@@ -661,9 +669,11 @@ namespace Popcron.Referencer
                     string key = type.FullName + ":" + Path.GetFileNameWithoutExtension(custom[i].Path);
                     if (!string.IsNullOrEmpty(key))
                     {
-                        if (nameToItem.ContainsKey(key)) continue;
+                        if (nameToItem.ContainsKey(key))
+                        {
+                            continue;
+                        }
 
-                        Reference value = custom[i];
                         nameToItem.Add(key, custom[i]);
                     }
                     else
@@ -702,9 +712,11 @@ namespace Popcron.Referencer
                     string key = id.Value + ":" + type.FullName;
                     if (!string.IsNullOrEmpty(key))
                     {
-                        if (idToItem.ContainsKey(key)) continue;
+                        if (idToItem.ContainsKey(key))
+                        {
+                            continue;
+                        }
 
-                        Reference value = builtin[i];
                         idToItem.Add(key, builtin[i]);
                     }
                     else
@@ -738,9 +750,11 @@ namespace Popcron.Referencer
                     string key = id.Value + ":" + type.FullName;
                     if (!string.IsNullOrEmpty(key))
                     {
-                        if (idToItem.ContainsKey(key)) continue;
+                        if (idToItem.ContainsKey(key))
+                        {
+                            continue;
+                        }
 
-                        Reference value = custom[i];
                         idToItem.Add(key, custom[i]);
                     }
                     else
@@ -766,7 +780,10 @@ namespace Popcron.Referencer
                     Object key = builtin[i].Object;
                     if (key)
                     {
-                        if (objectToPath.ContainsKey(key)) continue;
+                        if (objectToPath.ContainsKey(key))
+                        {
+                            continue;
+                        }
 
                         string value = builtin[i].Path.Replace('\\', '/');
                         objectToPath.Add(key, value);
@@ -785,7 +802,10 @@ namespace Popcron.Referencer
                     Object key = custom[i].Object;
                     if (key)
                     {
-                        if (objectToPath.ContainsKey(key)) continue;
+                        if (objectToPath.ContainsKey(key))
+                        {
+                            continue;
+                        }
 
                         string value = custom[i].Path.Replace('\\', '/');
                         objectToPath.Add(key, value);
