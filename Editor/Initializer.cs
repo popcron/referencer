@@ -81,17 +81,14 @@ namespace Popcron.Referencer
                     {
                         string data = text.Substring(start + find.Length, 100).Split(']')[0];
                         string year = data.Substring(0, 4);
-                        string month = "";
                         string day = "";
-                        string hour = "";
-                        string minute = "";
-                        string seconds = "";
+                        string month = "";
                         string rest = data.Substring(4).Split(' ')[0];
 
                         if (rest.Length == 2)
                         {
-                            month = int.Parse(rest[0].ToString()).ToString("00");
-                            day = int.Parse(rest[1].ToString()).ToString("00");
+                            day = int.Parse(rest[0].ToString()).ToString("00");
+                            month = int.Parse(rest[1].ToString()).ToString("00");
                         }
                         else if (rest.Length == 3)
                         {
@@ -100,30 +97,33 @@ namespace Popcron.Referencer
                             //otherwise its just the first digit that is the month
                             if (int.Parse(rest.Substring(0, 2)) <= 12)
                             {
-                                month = rest.Substring(0, 2);
-                                day = int.Parse(rest[2].ToString()).ToString("00");
+                                day = rest.Substring(0, 2);
+                                month = int.Parse(rest[2].ToString()).ToString("00");
                             }
                             else
                             {
-                                month = int.Parse(rest[0].ToString()).ToString("00");
-                                day = rest.Substring(1, 2);
+                                day = int.Parse(rest[0].ToString()).ToString("00");
+                                month = rest.Substring(1, 2);
                             }
                         }
                         else if (rest.Length == 4)
                         {
-                            month = rest.Substring(0, 2);
-                            day = rest.Substring(2, 2);
+                            day = rest.Substring(0, 2);
+                            month = rest.Substring(2, 2);
                         }
 
-                        hour = int.Parse(data.Split(' ')[1].Split(':')[0]).ToString("00");
-                        minute = int.Parse(data.Split(' ')[1].Split(':')[1]).ToString("00");
-                        seconds = int.Parse(data.Split(' ')[1].Split(':')[2]).ToString("00");
+                        string hour = int.Parse(data.Split(' ')[1].Split(':')[0]).ToString("00");
+                        string minute = int.Parse(data.Split(' ')[1].Split(':')[1]).ToString("00");
+                        string second = int.Parse(data.Split(' ')[1].Split(':')[2]).ToString("00");
 
                         key = Settings.UniqueIdentifier + ".InitializedLogTime";
-                        string logTimeString = year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + seconds;
-                        if (EditorPrefs.GetString(key) == logTimeString) return;
+                        string logTimeString = $"{year}-{day}-{month} {hour}:{minute}:{second}";
+                        if (EditorPrefs.GetString(key) == logTimeString)
+                        {
+                            return;
+                        }
 
-                        DateTime logTime = DateTime.ParseExact(logTimeString, "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                        DateTime logTime = DateTime.ParseExact(logTimeString, "yyyy-dd-MM HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
                         TimeSpan diff = now - logTime;
 
                         //load on boot, 30 seconds should be enough
