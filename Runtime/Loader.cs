@@ -9,6 +9,9 @@ namespace Popcron.Referencer
 {
     public class Loader
     {
+        /// <summary>
+        /// Loads all assets of this kind using AssetDatabase.
+        /// </summary>
         public static List<T> FindAssetsByType<T>() where T : Object
         {
             List<T> assets = new List<T>();
@@ -21,19 +24,29 @@ namespace Popcron.Referencer
                     assets.Add(asset);
                 }
             }
+
             return assets;
         }
 
-        public static Object LoadAssetAtPath(string path, Type type)
-        {
-            return Relay.LoadAssetAtPath("Assets/" + path, type);
-        }
+        /// <summary>
+        /// Loads the primary asset from this relative path.
+        /// <code>
+        /// Example: Prefabs/Projectiles/Bullet.prefab
+        /// </code>
+        /// </summary>
+        public static Object LoadAssetAtPath(string path, Type type) => Relay.LoadAssetAtPath($"Assets/{path}", type);
 
-        public static Object[] LoadAllAssetsAtPath(string path)
-        {
-            return Relay.LoadAllAssetsAtPath("Assets/" + path);
-        }
+        /// <summary>
+        /// Loads all assets from this relative path.
+        /// <code>
+        /// Example: Prefabs/Projectiles
+        /// </code>
+        /// </summary>
+        public static Object[] LoadAllAssetsAtPath(string path) => Relay.LoadAllAssetsAtPath($"Assets/{path}");
 
+        /// <summary>
+        /// Returns paths to all assets that match this filter using AssetDatabase.
+        /// </summary>
         public static List<string> FindAssets(string filter)
         {
             Settings settings = Settings.Current ?? new Settings();
@@ -42,12 +55,15 @@ namespace Popcron.Referencer
             List<string> assets = Relay.FindAssets(filter);
             foreach (string path in assets)
             {
-                if (path == settings.referencesAssetPath) continue;
+                if (path.Equals(settings.referencesAssetPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
 
                 string newPath = path.Replace("Assets/", "");
 
                 bool ignore = false;
-                foreach (var ignoredFolder in settings.ignoredFolders)
+                foreach (string ignoredFolder in settings.ignoredFolders)
                 {
                     if (newPath.StartsWith(ignoredFolder))
                     {
@@ -67,37 +83,52 @@ namespace Popcron.Referencer
             return paths;
         }
 
+        /// <summary>
+        /// Returns an ID from this asset.
+        /// </summary>
         public static long? GetIDFromScriptableObject(Object unityObject)
         {
-            if (unityObject is ScriptableObject so)
+            if (!unityObject)
+            {
+                return (long?)null;
+            }
+
+            if (unityObject is ScriptableObject)
             {
                 long? id = null;
                 PropertyInfo property = unityObject.GetType().GetProperty("ID");
                 FieldInfo field = unityObject.GetType().GetField("id");
 
-                //found id property
-                if (property != null)
+                try
                 {
-                    object value = property.GetValue(unityObject, null);
-                    if (value != null)
+                    //found id property
+                    if (property != null)
                     {
-                        id = Convert.ChangeType(value, typeof(long)) as long?;
+                        object value = property.GetValue(unityObject, null);
+                        if (value != null)
+                        {
+                            id = Convert.ChangeType(value, typeof(long)) as long?;
+                        }
+                    }
+                    else if (field != null)
+                    {
+                        object value = field.GetValue(unityObject);
+                        if (value != null)
+                        {
+                            id = Convert.ChangeType(value, typeof(long)) as long?;
+                        }
                     }
                 }
-                else if (field != null)
+                catch
                 {
-                    object value = field.GetValue(unityObject);
-                    if (value != null)
-                    {
-                        id = Convert.ChangeType(value, typeof(long)) as long?;
-                    }
+
                 }
 
                 return id;
             }
             else
             {
-                return null;
+                return (long?)null;
             }
         }
     }

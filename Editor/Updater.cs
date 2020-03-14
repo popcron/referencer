@@ -44,7 +44,7 @@ public class Updater : Editor
     private static async Task<Version> GetLocalVersion()
     {
         ListRequest listRequest = Client.List(true);
-        while (!listRequest.IsCompleted)
+        while (!listRequest.IsCompleted) //safe
         {
             await Task.Delay(1);
         }

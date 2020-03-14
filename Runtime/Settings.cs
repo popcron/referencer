@@ -55,17 +55,17 @@ namespace Popcron.Referencer
             //check folders
             for (int i = 0; i < ignoredFolders.Length; i++)
             {
-                if (path.StartsWith(ignoredFolders[i]))
+                if (path.StartsWith(ignoredFolders[i], StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
             }
 
             //check extensions
-            string extension = Path.GetExtension(path).ToLower();
+            string extension = Path.GetExtension(path);
             for (int i = 0; i < ignoreExtensions.Length; i++)
             {
-                if (extension == ignoreExtensions[i].ToLower())
+                if (extension.Equals(ignoreExtensions[i], StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }

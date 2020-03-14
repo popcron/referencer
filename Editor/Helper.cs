@@ -11,66 +11,172 @@ namespace Popcron.Referencer
 {
     public class Helper
     {
-        public static References CreateReferencesFile()
+        private static References references;
+
+        /// <summary>
+        /// Returns true if the asset for references exists in the project.
+        /// </summary>
+        public static bool DoesReferenceInstanceExist
         {
-            Settings settings = Settings.Current ?? new Settings();
-
-            References references = null;
-            List<References> allReferences = Loader.FindAssetsByType<References>();
-            for (int i = 0; i < allReferences.Count; i++)
+            get
             {
-                string path = AssetDatabase.GetAssetPath(allReferences[i]);
-                if (path == settings.referencesAssetPath)
-                {
-                    references = allReferences[i];
-                    break;
-                }
+                Settings settings = Settings.Current ?? new Settings();
+                string path = settings.referencesAssetPath;
+                return AssetDatabase.LoadAssetAtPath<References>(path) != null;
             }
+        }
 
-            //still null, so create a new one
+        /// <summary>
+        /// <para>Returns an instance of the references asset.</para>
+        /// If <c>loadAll</c> is false, the asset list wont be loaded in automatically if references
+        /// Doesnt exist.
+        /// </summary>
+        public static References GetReferencesInstance(bool loadAll)
+        {
             if (!references)
             {
-                references = ScriptableObject.CreateInstance<References>();
-                AssetDatabase.CreateAsset(references, settings.referencesAssetPath);
-                AssetDatabase.Refresh();
-                AssetProcessor.QueueLoad = true;
+                //null, try to find again from assets
+                Settings settings = Settings.Current ?? new Settings();
+                string path = settings.referencesAssetPath;
+                References newReferences = AssetDatabase.LoadAssetAtPath<References>(path);
+                if (!newReferences)
+                {
+                    //the asset dont exist, create it and load all for it
+                    newReferences = ScriptableObject.CreateInstance<References>();
+                    if (loadAll)
+                    {
+                        LoadAll(newReferences);
+                    }
+                }
+
+                references = newReferences;
             }
 
             return references;
         }
 
-        public static void LoadAll()
+        /// <summary>
+        /// Loads all assets into the asset.
+        /// Returns the true reference that was actually loaded into.
+        /// </summary>
+        public static References LoadAll(References references = null)
         {
-            //first clear
-            References.Clear();
+            Settings settings = Settings.Current ?? new Settings();
+
+            if (Application.isPlaying)
+            {
+                Debug.Log("[Referencer] Loading everything at runtime!");
+            }
+
+            bool created = false;
+            if (!references)
+            {
+                //create an new instance then
+                references = GetReferencesInstance(false);
+                created = true;
+            }
+
+            //check if this reference exists as an instance in the project
+            string realPath = AssetDatabase.GetAssetPath(references);
+            if (!realPath.Equals(settings.referencesAssetPath))
+            {
+                //not an actual reference instance, so create a new one and replace it
+                references = ScriptableObject.CreateInstance<References>();
+                created = true;
+            }
 
             List<AssetLoader> loaders = AssetLoader.Loaders;
             if (loaders.Count == 0)
             {
-                Debug.LogError("No loaders found");
+                Debug.LogError("[Referencer] No loaders found");
             }
 
+            //lol fucken cleareth they referencium
+            references.Clear();
+
             //then loop though all loaders and load the assets of their types
-            for (int loaderIndex = 0; loaderIndex < loaders.Count; loaderIndex++)
+            int loadedItems = 0;
+            for (int l = 0; l < loaders.Count; l++)
             {
-                AssetLoader loader = loaders[loaderIndex];
+                AssetLoader loader = loaders[l];
                 List<Reference> items = loader.LoadAll();
-                for (int itemIndex = 0; itemIndex < items.Count; itemIndex++)
+                for (int i = 0; i < items.Count; i++)
                 {
-                    Reference item = items[itemIndex];
-                    References.Add(item);
+                    Reference item = items[i];
+                    bool added = references.Add(item);
+                    if (added)
+                    {
+                        loadedItems++;
+                    }
                 }
             }
 
-            //mark as dirty
-            Helper.DirtyReferences();
+            Debug.Log($"[Referencer] Loaded in {loadedItems} assets into the references.");
+            if (created)
+            {
+                if (!DoesReferenceInstanceExist)
+                {
+                    //write to disk lmao
+                    AssetDatabase.CreateAsset(references, settings.referencesAssetPath);
+                }
+
+                SetDirty(references);
+                AssetDatabase.SaveAssets();
+            }
+            else
+            {
+                SetDirty(references);
+            }
+
+            return references;
         }
 
+        /// <summary>
+        /// Puts this references asset into a container in the current scene.
+        /// </summary>
+        public static void PutInsideContainer(References references)
+        {
+            //delete all containers ever but one
+            ReferencesContainer[] containers = Object.FindObjectsOfType<ReferencesContainer>();
+            for (int i = 0; i < containers.Length - 1; i++)
+            {
+                ReferencesContainer container = containers[i];
+                if (Application.isPlaying)
+                {
+                    Object.Destroy(container.gameObject);
+                }
+                else
+                {
+                    Object.DestroyImmediate(container.gameObject);
+                }
+            }
+
+            ReferencesContainer newContainer;
+            if (containers.Length == 1)
+            {
+                //use an existing one lmao
+                newContainer = containers[0];
+            }
+            else
+            {
+                //make a new one and put it in
+                GameObject gameObject = new GameObject(nameof(References));
+                newContainer = gameObject.AddComponent<ReferencesContainer>();
+            }
+
+            newContainer.references = references;
+
+            Scene scene = SceneManager.GetActiveScene();
+            Debug.Log($"[Referencer] Placed references into container in scene at {scene.path}.");
+            SetSceneDirty();
+        }
+
+        //reflected by Relay
         public static List<string> FindAssets(string filter)
         {
             List<string> paths = new List<string>();
             string[] guids = AssetDatabase.FindAssets(filter);
-            foreach (var guid in guids)
+            foreach (string guid in guids)
             {
                 paths.Add(AssetDatabase.GUIDToAssetPath(guid));
             }
@@ -78,46 +184,59 @@ namespace Popcron.Referencer
             return paths;
         }
 
-        public static Object LoadAssetAtPath(string path, Type type)
-        {
-            return AssetDatabase.LoadAssetAtPath(path, type);
-        }
+        //reflected by Relay
+        public static Object LoadAssetAtPath(string path, Type type) => AssetDatabase.LoadAssetAtPath(path, type);
 
-        public static Object[] LoadAllAssetsAtPath(string path)
-        {
-            return AssetDatabase.LoadAllAssetsAtPath(path);
-        }
+        //reflected by Relay
+        public static Object[] LoadAllAssetsAtPath(string path) => AssetDatabase.LoadAllAssetsAtPath(path);
 
-        public static void DirtyScene()
+        public static void SetSceneDirty()
         {
             Scene scene = SceneManager.GetActiveScene();
 
             //scene is invalid, cant set it dirty
-            if (!scene.IsValid()) return;
+            if (!scene.IsValid())
+            {
+                return;
+            }
 
             //scene isnt loaded, cant set it dirty
-            if (!scene.isLoaded) return;
+            if (!scene.isLoaded)
+            {
+                return;
+            }
 
             //scene isnt saved in the project, probably a new untitled scene
-            if (string.IsNullOrEmpty(scene.path)) return;
+            if (string.IsNullOrEmpty(scene.path))
+            {
+                return;
+            }
 
             //cant do this while playing
-            if (Application.isPlaying) return;
+            if (Application.isPlaying)
+            {
+                return;
+            }
 
             EditorSceneManager.MarkSceneDirty(scene);
         }
 
-        public static void DirtyReferences()
+        public static void SetDirty(Object obj)
         {
-            References references = References.Instance;
-
             //references somehow doesnt exist
-            if (references == null) return;
+            if (!obj)
+            {
+                return;
+            }
 
             //cant do this while playing
-            if (Application.isPlaying) return;
+            if (Application.isPlaying)
+            {
+                return;
+            }
 
-            EditorUtility.SetDirty(references);
+            EditorUtility.SetDirty(obj);
+            AssetDatabase.SaveAssets();
         }
     }
 }

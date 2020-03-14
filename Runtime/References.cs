@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 namespace Popcron.Referencer
@@ -10,86 +12,41 @@ namespace Popcron.Referencer
 
     public class References : ScriptableObject
     {
-        private static References instance;
-        private static Random random;
-
-        public static References Instance
-        {
-            get
-            {
-                //if its null, find the instance using asset database
-                //and apply it onto a game object
-                if (instance == null)
-                {
-                    //try to find a container first
-                    GameObject instanceContainer = GameObject.Find(Settings.UniqueIdentifier);
-                    ReferencesContainer container = null;
-                    bool dirty = false;
-                    if (!instanceContainer)
-                    {
-                        //game object is not found
-                        instanceContainer = new GameObject(Settings.UniqueIdentifier)
-                        {
-                            hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector
-                        };
-                        container = instanceContainer.AddComponent<ReferencesContainer>();
-                        dirty = true;
-                    }
-                    else
-                    {
-                        //game object is found and the component is also found
-                        container = instanceContainer.GetComponent<ReferencesContainer>();
-                        if (container == null)
-                        {
-                            container = instanceContainer.AddComponent<ReferencesContainer>();
-                            dirty = true;
-                        }
-                    }
-
-                    //no references file is on container, create new one
-                    if (!container.references)
-                    {
-                        container.references = Relay.CreateReferencesFile();
-                        dirty = true;
-                    }
-
-                    //dirty call was queued, hehe
-                    //mark scene as dirty
-                    if (dirty)
-                    {
-                        Relay.DirtyScene();
-                    }
-
-                    instance = container.references;
-                }
-
-                return instance;
-            }
-        }
+        private static Random random = null;
 
         [SerializeField]
-        internal List<Reference> builtin = new List<Reference>();
-
-        [SerializeField]
-        internal List<Reference> custom = new List<Reference>();
-
+        private List<Reference> assets = new List<Reference>();
         private Dictionary<string, Reference> pathToItem = null;
         private Dictionary<string, Reference> nameToItem = null;
         private Dictionary<string, Reference> idToItem = null;
         private Dictionary<Object, string> objectToPath = null;
+        private ReadOnlyCollection<Reference> assetsReadOnly = null;
+
+        public ReadOnlyCollection<Reference> Assets
+        {
+            get
+            {
+                if (assetsReadOnly == null)
+                {
+                    assetsReadOnly = assets.AsReadOnly();
+                }
+
+                return assetsReadOnly;
+            }
+        }
 
         /// <summary>
         /// Removes a reference at this path.
         /// </summary>
-        public static void Remove(string path)
+        public void Remove(string path)
         {
             path = path.Replace('\\', '/');
-            List<Reference> items = Instance.builtin;
-            for (int i = 0; i < items.Count; i++)
+            for (int i = 0; i < assets.Count; i++)
             {
-                if (items[i].Path == path)
+                if (assets[i].Path.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
-                    items.RemoveAt(i);
+                    assets.RemoveAt(i);
+                    assetsReadOnly = assets.AsReadOnly();
                     return;
                 }
             }
@@ -98,27 +55,16 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns a raw reference item using a path.
         /// </summary>
-        public static Reference GetReference(string path)
+        public Reference GetReference(string path)
         {
             path = path.Replace('\\', '/');
 
             //first check built in data
-            List<Reference> items = Instance.builtin;
-            for (int i = 0; i < items.Count; i++)
+            for (int i = 0; i < assets.Count; i++)
             {
-                if (items[i].Path == path)
+                if (assets[i].Path.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
-                    return items[i];
-                }
-            }
-
-            //then check customs
-            items = Instance.custom;
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].Path == path)
-                {
-                    return items[i];
+                    return assets[i];
                 }
             }
 
@@ -128,34 +74,24 @@ namespace Popcron.Referencer
         /// <summary>
         /// Clears the entire reference list.
         /// </summary>
-        public static void Clear()
+        public void Clear()
         {
-            if (Application.isPlaying)
-            {
-                Instance?.custom?.Clear();
-            }
-            else
-            {
-                Instance?.builtin?.Clear();
-            }
+            assets.Clear();
+            assetsReadOnly = assets.AsReadOnly();
         }
 
         /// <summary>
         /// Returns true if an object with this path exists.
         /// </summary>
-        public static bool Contains(string path)
+        public bool Contains(string path)
         {
             path = path.Replace('\\', '/');
-            List<Reference> items = Instance.builtin;
-            for (int i = 0; i < items.Count; i++)
+            for (int i = 0; i < assets.Count; i++)
             {
-                if (items[i].Path == path) return true;
-            }
-
-            items = Instance.custom;
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].Path == path) return true;
+                if (assets[i].Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
             }
 
             return false;
@@ -164,14 +100,15 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns an object with a matching ID field or property.
         /// </summary>
-        public static Object Get(Type type, long id)
+        public Object Get(Type type, long id)
         {
             string typeName = type.FullName;
-            Instance.CheckCache();
+            EnsureCacheExists();
 
-            if (Instance.idToItem != null)
+            if (idToItem != null)
             {
-                if (Instance.idToItem.TryGetValue(id + ":" + typeName, out Reference item))
+                string key = $"{id}:{typeName}";
+                if (idToItem.TryGetValue(key, out Reference item))
                 {
                     if (item.Type == type)
                     {
@@ -184,21 +121,11 @@ namespace Popcron.Referencer
                 }
             }
 
-            List<Reference> items = Instance.builtin;
-            for (int i = 0; i < items.Count; i++)
+            for (int i = 0; i < assets.Count; i++)
             {
-                if (items[i].ID == id && items[i].Type == type)
+                if (assets[i].ID == id && assets[i].Type == type)
                 {
-                    return items[i].Object;
-                }
-            }
-
-            items = Instance.custom;
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].ID == id && items[i].Type == type)
-                {
-                    return items[i].Object;
+                    return assets[i].Object;
                 }
             }
 
@@ -208,22 +135,30 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns an object with a matching ID field or property.
         /// </summary>
-        public static T Get<T>(long id) where T : class
-        {
-            return Get(typeof(T), id) as T;
-        }
+        public T Get<T>(long id) where T : class => Get(typeof(T), id) as T;
 
         /// <summary>
         /// Returns a random object of a type.
         /// </summary>
-        public static Object GetRandom(Type type)
+        public Object GetRandom(Type type)
         {
             List<Object> list = GetAll(type);
 
-            if (list.Count == 0) return null;
-            if (list.Count == 1) return list[1];
+            if (list.Count == 0)
+            {
+                return null;
+            }
 
-            random = random ?? new Random();
+            if (list.Count == 1)
+            {
+                return list[1];
+            }
+
+            //ensure randomness exists
+            if (random == null)
+            {
+                random = new Random();
+            }
 
             return list[random.Next(list.Count)];
         }
@@ -231,28 +166,18 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns a random object of a type.
         /// </summary>
-        public static T GetRandom<T>() where T : class
-        {
-            List<T> list = GetAll<T>();
-
-            if (list.Count == 0) return null;
-            if (list.Count == 1) return list[1];
-
-            random = random ?? new Random();
-
-            return list[random.Next(list.Count)];
-        }
+        public T GetRandom<T>() where T : class => GetRandom(typeof(T)) as T;
 
         /// <summary>
         /// Returns the path of an object. It will return null if the object isnt tracked.
         /// </summary>
-        public static string GetPath(Object value)
+        public string GetPath(Object value)
         {
-            Instance.CheckCache();
+            EnsureCacheExists();
 
-            if (Instance.objectToPath != null)
+            if (objectToPath != null)
             {
-                if (Instance.objectToPath.TryGetValue(value, out string path))
+                if (objectToPath.TryGetValue(value, out string path))
                 {
                     return path;
                 }
@@ -264,63 +189,61 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns an object with using the name or path.
         /// </summary>
-        public static Object Get(Type type, string name)
+        public Object Get(Type type, string name)
         {
-            Instance.CheckCache();
+            //if name is null
+            if (string.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+
+            EnsureCacheExists();
 
             //name cotains a / or a \\ so check in path dictionary
             if (name.IndexOf('/') != -1 || name.IndexOf('\\') != -1)
             {
                 name = name.Replace('\\', '/');
-                if (Instance.pathToItem != null)
+                if (pathToItem != null)
                 {
-                    if (Instance.pathToItem.TryGetValue(name, out Reference item))
+                    if (pathToItem.TryGetValue(name, out Reference item))
                     {
                         if (item.Type == type)
                         {
                             return item.Object;
-                        }
-                        else
-                        {
-                            return null;
                         }
                     }
                 }
             }
-            else
+
+            //check by name now
+            if (nameToItem != null)
             {
-                if (Instance.nameToItem != null)
+                string key = $"{type.FullName}:{name}";
+                if (nameToItem.TryGetValue(key, out Reference item))
                 {
-                    if (Instance.nameToItem.TryGetValue(type.FullName + ":" + name, out Reference item))
+                    if (item.Type == type)
                     {
-                        if (item.Type == type)
-                        {
-                            return item.Object;
-                        }
-                        else
-                        {
-                            return null;
-                        }
+                        return item.Object;
                     }
                 }
             }
 
             //last resort
-            List<Reference> items = Instance.builtin;
+            List<Reference> items = assets;
             for (int i = 0; i < items.Count; i++)
             {
-                if (items[i].Path == name && items[i].Type == type)
+                Reference item = items[i];
+                if (item.Type == type)
                 {
-                    return items[i].Object;
-                }
-            }
+                    if (string.IsNullOrEmpty(item.Path))
+                    {
+                        continue;
+                    }
 
-            items = Instance.custom;
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].Path == name && items[i].Type == type)
-                {
-                    return items[i].Object;
+                    if (item.Path.Equals(name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return item.Object;
+                    }
                 }
             }
 
@@ -328,55 +251,21 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
-        /// Returns an object with using the name or path.
+        /// Returns an object with using the name or path with this type.
         /// </summary>
-        public static T Get<T>(string name) where T : class
-        {
-            return Get(typeof(T), name) as T;
-        }
-
-        public static List<Reference> GetAll(bool customOnly = false)
-        {
-            Instance.CheckCache();
-
-            if (customOnly)
-            {
-                return Instance.custom;
-            }
-            else
-            {
-                List<Reference> items = new List<Reference>(Instance.builtin);
-                items.AddRange(Instance.custom);
-                return items;
-            }
-        }
+        public T Get<T>(string name) where T : class => Get(typeof(T), name) as T;
 
         /// <summary>
         /// Returns all objecst of a type.
         /// </summary>
-        public static List<Object> GetAll(Type type, bool customOnly = false)
+        public List<Object> GetAll(Type type)
         {
-            Instance.CheckCache();
-
             List<Object> result = new List<Object>();
-            List<Reference> items = Instance.builtin;
-            if (!customOnly)
+            for (int i = 0; i < assets.Count; i++)
             {
-                for (int i = 0; i < items.Count; i++)
+                if (assets[i].Type == type || type.IsAssignableFrom(assets[i].Type))
                 {
-                    if (items[i].Type == type)
-                    {
-                        result.Add(items[i].Object);
-                    }
-                }
-            }
-
-            items = Instance.custom;
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].Type == type)
-                {
-                    result.Add(items[i].Object);
+                    result.Add(assets[i].Object);
                 }
             }
 
@@ -384,58 +273,37 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
-        /// Returns all objects of a type.
+        /// Returns all objects of a type and the parent types too.
         /// </summary>
-        public static List<T> GetAll<T>(bool customOnly = false) where T : class
+        public List<T> GetAll<T>(bool customOnly = false) where T : class
         {
-            Instance.CheckCache();
-
             Type type = typeof(T);
             List<T> result = new List<T>();
-            List<Reference> items = Instance.builtin;
             if (!customOnly)
             {
-                for (int i = 0; i < items.Count; i++)
+                for (int i = 0; i < assets.Count; i++)
                 {
-                    if (items[i].Type == type)
+                    if (assets[i].Type == type || type.IsAssignableFrom(assets[i].Type))
                     {
-                        result.Add(items[i].Object as T);
+                        result.Add(assets[i].Object as T);
                     }
-                }
-            }
-
-            items = Instance.custom;
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].Type == type)
-                {
-                    result.Add(items[i].Object as T);
                 }
             }
 
             return result;
         }
 
-        public static List<Reference> GetAllReferencesWithIDs()
+        /// <summary>
+        /// Returns all references that have an ID property, or an id field.
+        /// </summary>
+        public List<Reference> GetAllReferencesWithIDs()
         {
-            Instance.CheckCache();
-
             List<Reference> result = new List<Reference>();
-            List<Reference> items = Instance.builtin;
-            for (int i = 0; i < items.Count; i++)
+            for (int i = 0; i < assets.Count; i++)
             {
-                if (items[i].ID.HasValue)
+                if (assets[i].ID.HasValue)
                 {
-                    result.Add(items[i]);
-                }
-            }
-
-            items = Instance.custom;
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].ID.HasValue)
-                {
-                    result.Add(items[i]);
+                    result.Add(assets[i]);
                 }
             }
 
@@ -445,27 +313,19 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns all raw references of a type.
         /// </summary>
-        public static List<Reference> GetAllReferences<T>() where T : class
+        public List<Reference> GetAllReferences<T>() where T : class
         {
-            Instance.CheckCache();
-
             Type type = typeof(T);
             List<Reference> result = new List<Reference>();
-            List<Reference> items = Instance.builtin;
-            for (int i = 0; i < items.Count; i++)
+            for (int i = 0; i < assets.Count; i++)
             {
-                if (items[i].Type == type)
+                if (assets[i].Type == type)
                 {
-                    result.Add(items[i]);
+                    result.Add(assets[i]);
                 }
-            }
-
-            items = Instance.custom;
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].Type == type)
+                else if (type.IsAssignableFrom(assets[i].Type))
                 {
-                    result.Add(items[i]);
+                    result.Add(assets[i]);
                 }
             }
 
@@ -473,15 +333,22 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
-        /// Adds an item to the list of references manually.
+        /// Adds an item to the list of references manually. Returns true if successful
         /// </summary>
-        public static void Add(Reference item)
+        public bool Add(Reference item)
         {
+#if UNITY_EDITOR
+            //add as long as its not in the game folder
+            if (item.Path.IndexOf("Assets/Game", StringComparison.OrdinalIgnoreCase) != -1)
+            {
+                return false;
+            }
+#endif
             //first check if it already exists
             //if it does, dont add
             if (Contains(item.Path))
             {
-                return;
+                return false;
             }
 
             //item has no object asset assigned
@@ -489,90 +356,83 @@ namespace Popcron.Referencer
             Object unityObject = item.Object;
             if (!unityObject)
             {
-                return;
+                return false;
             }
 
-            //somehow null?
-            if (Instance.pathToItem == null)
+            if (pathToItem == null)
             {
-                Instance.pathToItem = new Dictionary<string, Reference>();
+                pathToItem = new Dictionary<string, Reference>();
             }
-            if (Instance.nameToItem == null)
+
+            if (nameToItem == null)
             {
-                Instance.nameToItem = new Dictionary<string, Reference>();
+                nameToItem = new Dictionary<string, Reference>();
             }
-            if (Instance.idToItem == null)
+
+            if (idToItem == null)
             {
-                Instance.idToItem = new Dictionary<string, Reference>();
+                idToItem = new Dictionary<string, Reference>();
             }
-            if (Instance.objectToPath == null)
+
+            if (objectToPath == null)
             {
-                Instance.objectToPath = new Dictionary<Object, string>();
+                objectToPath = new Dictionary<Object, string>();
             }
 
             long? id = Loader.GetIDFromScriptableObject(unityObject);
             Type type = item.Type;
             string path = item.Path.Replace('\\', '/');
-            string name = Path.GetFileNameWithoutExtension(item.Path);
-            string typeNameAndName = type.FullName + ":" + name;
+            string name = unityObject.name;
+            string typeNameAndName = $"{type.FullName}:{name}";
 
-            //load this asset into customs if the game is running and the asset is from the Game folder
-            bool addToCustom = Application.isPlaying;
-#if UNITY_EDITOR
-            addToCustom &= item.Path.IndexOf("Assets/Game") != -1;
-#endif
-            if (addToCustom)
-            {
-                Instance.custom.Add(item);
-            }
-            else
-            {
-                Instance.builtin.Add(item);
-            }
+            assets.Add(item);
+            assetsReadOnly = assets.AsReadOnly();
 
             //add to dictionaries
-            if (!Instance.pathToItem.ContainsKey(path))
+            if (!pathToItem.ContainsKey(path))
             {
-                Instance.pathToItem.Add(path, item);
+                pathToItem.Add(path, item);
             }
 
-            if (!Instance.nameToItem.ContainsKey(typeNameAndName))
+            if (!nameToItem.ContainsKey(typeNameAndName))
             {
-                Instance.nameToItem.Add(typeNameAndName, item);
+                nameToItem.Add(typeNameAndName, item);
             }
 
             if (id != null)
             {
-                string idAndTypeName = id.Value + ":" + type.FullName;
-                if (!Instance.idToItem.ContainsKey(idAndTypeName))
+                string idAndTypeName = $"{id.Value}:{type.FullName}";
+                if (!idToItem.ContainsKey(idAndTypeName))
                 {
-                    Instance.idToItem.Add(idAndTypeName, item);
+                    idToItem.Add(idAndTypeName, item);
                 }
             }
 
-            if (!Instance.objectToPath.ContainsKey(unityObject))
+            if (!objectToPath.ContainsKey(unityObject))
             {
-                Instance.objectToPath.Add(unityObject, path);
+                objectToPath.Add(unityObject, path);
             }
+
+            return true;
         }
 
-        internal void CheckCache()
+        internal void EnsureCacheExists()
         {
-            bool queueRefresh = false;
+            bool errorFound = false;
             if (pathToItem == null)
             {
                 pathToItem = new Dictionary<string, Reference>();
 
                 //built in
-                for (int i = 0; i < builtin.Count; i++)
+                for (int i = 0; i < assets.Count; i++)
                 {
-                    if (builtin[i] == null)
+                    if (assets[i] == null)
                     {
-                        queueRefresh = true;
+                        errorFound = true;
                         continue;
                     }
 
-                    string key = builtin[i].Path.Replace('\\', '/');
+                    string key = assets[i].Path.Replace('\\', '/');
                     if (!string.IsNullOrEmpty(key))
                     {
                         if (pathToItem.ContainsKey(key))
@@ -580,36 +440,11 @@ namespace Popcron.Referencer
                             continue;
                         }
 
-                        pathToItem.Add(key, builtin[i]);
+                        pathToItem.Add(key, assets[i]);
                     }
                     else
                     {
-                        Debug.LogWarning(builtin[i]?.Object?.name + " has no path. Not adding to reference list.");
-                    }
-                }
-
-                //custom
-                for (int i = 0; i < custom.Count; i++)
-                {
-                    if (custom[i] == null)
-                    {
-                        queueRefresh = true;
-                        continue;
-                    }
-
-                    string key = custom[i].Path.Replace('\\', '/');
-                    if (!string.IsNullOrEmpty(key))
-                    {
-                        if (pathToItem.ContainsKey(key))
-                        {
-                            continue;
-                        }
-
-                        pathToItem.Add(key, custom[i]);
-                    }
-                    else
-                    {
-                        Debug.LogWarning(custom[i]?.Object?.name + " has no path. Not adding to reference list.");
+                        Debug.LogWarning($"[Referencer] {assets[i]?.Object?.name} has no path, so not adding to reference db");
                     }
                 }
             }
@@ -619,22 +454,22 @@ namespace Popcron.Referencer
                 nameToItem = new Dictionary<string, Reference>();
 
                 //built in
-                for (int i = 0; i < builtin.Count; i++)
+                for (int i = 0; i < assets.Count; i++)
                 {
-                    if (builtin[i] == null)
+                    if (assets[i] == null)
                     {
-                        queueRefresh = true;
+                        errorFound = true;
                         continue;
                     }
 
-                    Type type = builtin[i].Type;
+                    Type type = assets[i].Type;
                     if (type == null)
                     {
-                        queueRefresh = true;
+                        errorFound = true;
                         continue;
                     }
 
-                    string key = type.FullName + ":" + Path.GetFileNameWithoutExtension(builtin[i].Path);
+                    string key = $"{type.FullName}:{Path.GetFileNameWithoutExtension(assets[i].Path)}";
                     if (!string.IsNullOrEmpty(key))
                     {
                         if (nameToItem.ContainsKey(key))
@@ -642,43 +477,11 @@ namespace Popcron.Referencer
                             continue;
                         }
 
-                        nameToItem.Add(key, builtin[i]);
+                        nameToItem.Add(key, assets[i]);
                     }
                     else
                     {
-                        Debug.LogWarning(builtin[i]?.Object?.name + " has no path. Not adding to reference list.");
-                    }
-                }
-
-                //custom
-                for (int i = 0; i < custom.Count; i++)
-                {
-                    if (custom[i] == null)
-                    {
-                        queueRefresh = true;
-                        continue;
-                    }
-
-                    Type type = custom[i].Type;
-                    if (type == null)
-                    {
-                        queueRefresh = true;
-                        continue;
-                    }
-
-                    string key = type.FullName + ":" + Path.GetFileNameWithoutExtension(custom[i].Path);
-                    if (!string.IsNullOrEmpty(key))
-                    {
-                        if (nameToItem.ContainsKey(key))
-                        {
-                            continue;
-                        }
-
-                        nameToItem.Add(key, custom[i]);
-                    }
-                    else
-                    {
-                        Debug.LogWarning(custom[i]?.Object?.name + " has no path. Not adding to reference list.");
+                        Debug.LogWarning($"[Referencer] {assets[i]?.Object?.name} has no path, so not adding to reference db");
                     }
                 }
             }
@@ -688,28 +491,28 @@ namespace Popcron.Referencer
                 idToItem = new Dictionary<string, Reference>();
 
                 //built in
-                for (int i = 0; i < builtin.Count; i++)
+                for (int i = 0; i < assets.Count; i++)
                 {
-                    if (builtin[i] == null)
+                    if (assets[i] == null)
                     {
-                        queueRefresh = true;
+                        errorFound = true;
                         continue;
                     }
 
-                    long? id = builtin[i].ID;
+                    long? id = assets[i].ID;
                     if (id == null)
                     {
                         continue;
                     }
 
-                    Type type = builtin[i].Type;
+                    Type type = assets[i].Type;
                     if (type == null)
                     {
-                        queueRefresh = true;
+                        errorFound = true;
                         continue;
                     }
 
-                    string key = id.Value + ":" + type.FullName;
+                    string key = $"{id.Value}:{type.FullName}";
                     if (!string.IsNullOrEmpty(key))
                     {
                         if (idToItem.ContainsKey(key))
@@ -717,49 +520,11 @@ namespace Popcron.Referencer
                             continue;
                         }
 
-                        idToItem.Add(key, builtin[i]);
+                        idToItem.Add(key, assets[i]);
                     }
                     else
                     {
-                        Debug.LogWarning(builtin[i]?.Object?.name + " has no path. Not adding to reference list.");
-                    }
-                }
-
-                //custom
-                for (int i = 0; i < custom.Count; i++)
-                {
-                    if (custom[i] == null)
-                    {
-                        queueRefresh = true;
-                        continue;
-                    }
-
-                    long? id = custom[i].ID;
-                    if (id == null)
-                    {
-                        continue;
-                    }
-
-                    Type type = custom[i].Type;
-                    if (type == null)
-                    {
-                        queueRefresh = true;
-                        continue;
-                    }
-
-                    string key = id.Value + ":" + type.FullName;
-                    if (!string.IsNullOrEmpty(key))
-                    {
-                        if (idToItem.ContainsKey(key))
-                        {
-                            continue;
-                        }
-
-                        idToItem.Add(key, custom[i]);
-                    }
-                    else
-                    {
-                        Debug.LogWarning(custom[i]?.Object?.name + " has no path. Not adding to reference list.");
+                        Debug.LogWarning($"[Referencer] {assets[i]?.Object?.name} has no path, so not adding to reference db");
                     }
                 }
             }
@@ -769,15 +534,15 @@ namespace Popcron.Referencer
                 objectToPath = new Dictionary<Object, string>();
 
                 //built in
-                for (int i = 0; i < builtin.Count; i++)
+                for (int i = 0; i < assets.Count; i++)
                 {
-                    if (builtin[i] == null)
+                    if (assets[i] == null)
                     {
-                        queueRefresh = true;
+                        errorFound = true;
                         continue;
                     }
 
-                    Object key = builtin[i].Object;
+                    Object key = assets[i].Object;
                     if (key)
                     {
                         if (objectToPath.ContainsKey(key))
@@ -785,37 +550,16 @@ namespace Popcron.Referencer
                             continue;
                         }
 
-                        string value = builtin[i].Path.Replace('\\', '/');
-                        objectToPath.Add(key, value);
-                    }
-                }
-
-                //custom
-                for (int i = 0; i < custom.Count; i++)
-                {
-                    if (custom[i] == null)
-                    {
-                        queueRefresh = true;
-                        continue;
-                    }
-
-                    Object key = custom[i].Object;
-                    if (key)
-                    {
-                        if (objectToPath.ContainsKey(key))
-                        {
-                            continue;
-                        }
-
-                        string value = custom[i].Path.Replace('\\', '/');
+                        string value = assets[i].Path.Replace('\\', '/');
                         objectToPath.Add(key, value);
                     }
                 }
             }
 
-            if (queueRefresh)
+            //an error in the database was found, gon refresh now then
+            if (errorFound)
             {
-                Debug.LogError("Errors found when creating cache, please refresh all assets");
+                Relay.LoadAll(this);
             }
         }
     }

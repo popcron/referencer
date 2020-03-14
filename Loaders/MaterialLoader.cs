@@ -27,8 +27,8 @@ namespace Popcron.Referencer
 
         public override List<Reference> Load(string path)
         {
-            var prefab = Loader.LoadAssetAtPath(path, Type);
-            Reference item = new Reference(prefab, Type, path);
+            UnityEngine.Object material = Loader.LoadAssetAtPath(path, Type);
+            Reference item = new Reference(material, Type, path);
             return new List<Reference>() { item };
         }
     }

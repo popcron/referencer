@@ -5,8 +5,10 @@ using Object = UnityEngine.Object;
 
 namespace Popcron.Referencer
 {
-    //this class relays method class to the Helper class in the editor assembly
-    internal class Relay
+    /// <summary>
+    /// This class relays method class to the Helper class in the editor assembly.
+    /// </summary>
+    public class Relay
     {
         private static Type helperType = null;
 
@@ -45,44 +47,28 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
-        /// Creates a Reference asset
+        /// Calls upon Helper.LoadAll();
         /// </summary>
-        internal static References CreateReferencesFile()
-        {
-            Type helper = HelperType;
-            if (helper != null)
-            {
-                MethodInfo method = helper.GetMethod("CreateReferencesFile");
-                object value = method.Invoke(null, null);
-                return value as References;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        internal static void LoadAll()
+        public static void LoadAll(References references)
         {
             Type helper = HelperType;
             if (helper != null)
             {
                 MethodInfo method = helper.GetMethod("LoadAll");
-                method.Invoke(null, null);
+                method.Invoke(null, new object[] { references });
             }
         }
 
         /// <summary>
-        /// Returns asset paths of this type
+        /// Returns asset paths of this type.
         /// </summary>
         internal static List<string> FindAssets<T>() where T : class
         {
-            string filter = string.Format("t:{0}", typeof(T));
-            return FindAssets(filter);
+            return FindAssets($"t:{typeof(T)}");
         }
 
         /// <summary>
-        /// Returns asset paths with this filter as a search query
+        /// Returns asset paths with this filter as a search query.
         /// </summary>
         internal static List<string> FindAssets(string filter)
         {
@@ -99,7 +85,7 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
-        /// Returns an object from a path
+        /// Returns an object from a path.
         /// </summary>
         internal static T LoadAssetAtPath<T>(string path) where T : class
         {
@@ -107,7 +93,7 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
-        /// Returns an object from a path using type
+        /// Returns an object from a path using type.
         /// </summary>
         internal static Object LoadAssetAtPath(string path, Type type)
         {
@@ -124,7 +110,7 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
-        /// Returns all objects at the path
+        /// Returns all objects at the path.
         /// </summary>
         internal static Object[] LoadAllAssetsAtPath(string path)
         {
@@ -137,26 +123,6 @@ namespace Popcron.Referencer
             else
             {
                 return null;
-            }
-        }
-
-        internal static void DirtyScene()
-        {
-            Type helper = HelperType;
-            if (helper != null)
-            {
-                MethodInfo method = helper.GetMethod("DirtyScene");
-                method.Invoke(null, null);
-            }
-        }
-
-        internal static void DirtyReferences()
-        {
-            Type helper = HelperType;
-            if (helper != null)
-            {
-                MethodInfo method = helper.GetMethod("DirtyReferences");
-                method.Invoke(null, null);
             }
         }
     }

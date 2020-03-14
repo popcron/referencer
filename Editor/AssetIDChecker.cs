@@ -18,15 +18,27 @@ namespace Popcron.Referencer
 
         private static void Update()
         {
+            //only be checking if it exists
+            if (!Helper.DoesReferenceInstanceExist)
+            {
+                return;
+            }
+
             //only check every 1 second
-            if (EditorApplication.timeSinceStartup < nextCheck) return;
+            if (EditorApplication.timeSinceStartup < nextCheck)
+            {
+                return;
+            }
 
             nextCheck = EditorApplication.timeSinceStartup + CheckRate;
             bool changed = false;
 
+            //get an instance of references
+            References references = Helper.GetReferencesInstance(true);
+
             //check all reference items with an ID
-            List<Reference> references = References.GetAllReferencesWithIDs();
-            foreach (Reference reference in references)
+            List<Reference> items = references.GetAllReferencesWithIDs();
+            foreach (Reference reference in items)
             {
                 if (reference.Object is ScriptableObject scriptableObject)
                 {
@@ -41,7 +53,7 @@ namespace Popcron.Referencer
 
             if (changed)
             {
-                Helper.DirtyReferences();
+                Helper.SetDirty(references);
             }
         }
     }

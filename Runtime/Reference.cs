@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
+using System.Reflection;
 using UnityEngine;
 
 namespace Popcron.Referencer
@@ -25,14 +25,14 @@ namespace Popcron.Referencer
         private Type cachedType;
         private bool idIsNull = true;
 
-        public UnityEngine.Object Object
-        {
-            get
-            {
-                return unityObject;
-            }
-        }
+        /// <summary>
+        /// Reference to the asset itself.
+        /// </summary>
+        public UnityEngine.Object Object => unityObject;
 
+        /// <summary>
+        /// The type of this referenced asset.
+        /// </summary>
         public Type Type
         {
             get
@@ -61,16 +61,17 @@ namespace Popcron.Referencer
                     else if (typeName == "UnityEngine.Font") cachedType = typeof(Font);
                     else if (typeName == "UnityEngine.GameObject") cachedType = typeof(GameObject);
                     else if (typeName == "UnityEngine.ScriptableObject") cachedType = typeof(ScriptableObject);
+                    else if (typeName == "UnityEngine.Shader") cachedType = typeof(Shader);
                     else cachedType = Type.GetType(typeName + ", Assembly-CSharp");
 
                     //if the cached type is still null, brute force search
                     if (cachedType == null)
                     {
-                        var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                        foreach (var assembly in assemblies)
+                        Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                        foreach (Assembly assembly in assemblies)
                         {
-                            var types = assembly.GetTypes();
-                            foreach (var type in types)
+                            Type[] types = assembly.GetTypes();
+                            foreach (Type type in types)
                             {
                                 if (type.FullName == typeName)
                                 {
@@ -79,7 +80,10 @@ namespace Popcron.Referencer
                                 }
                             }
 
-                            if (cachedType != null) break;
+                            if (cachedType != null)
+                            {
+                                break;
+                            }
                         }
                     }
 
@@ -103,30 +107,27 @@ namespace Popcron.Referencer
             }
         }
 
+        /// <summary>
+        /// Path to the asset.
+        /// </summary>
         public string Path
         {
-            get
-            {
-                return path;
-            }
-            set
-            {
-                path = value;
-            }
+            get => path;
+            set => path = value;
         }
 
+        /// <summary>
+        /// ID of this asset based on the ID property or id field.
+        /// </summary>
         public long? ID
         {
             get
             {
-                if (idIsNull) return null;
-
-                return id;
+                return idIsNull ? null : (long?)id;
             }
             set
             {
                 idIsNull = value == null;
-
                 if (value != null)
                 {
                     id = value.Value;
@@ -145,35 +146,6 @@ namespace Popcron.Referencer
             this.unityObject = unityObject;
             this.typeName = type.FullName;
             this.cachedType = type;
-        }
-
-        public static implicit operator Reference(string path)
-        {
-            List<Reference> items = References.Instance.builtin;
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].Path == path)
-                {
-                    return items[i];
-                }
-            }
-
-            return null;
-        }
-
-        public static implicit operator Reference(long id)
-        {
-            List<Reference> items = References.Instance.builtin;
-            for (int i = 0; i < items.Count; i++)
-            {
-                if (items[i].ID == null) continue;
-                if (items[i].ID == id)
-                {
-                    return items[i];
-                }
-            }
-
-            return null;
         }
     }
 }
