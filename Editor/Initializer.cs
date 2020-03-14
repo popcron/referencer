@@ -1,7 +1,8 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -158,67 +159,14 @@ namespace Popcron.Referencer
                     string second = int.Parse(data.Split(' ')[1].Split(':')[2]).ToString("00");
 
                     string logTimeString = $"{year}-{month}-{day} {hour}:{minute}:{second}";
-                    return DateTime.ParseExact(logTimeString, "yyyy-dd-MM HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-                }
-                else
-                {
-                    return DateTime.Now;
-                }
-            }
-        }
-
-        private static DateTime GetLicenseTime()
-        {
-            string local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            string path = Path.Combine(local, "Unity", "Editor", "Editor.log");
-
-            if (!File.Exists(path))
-            {
-                //if editor log doesnt exist, then update
-                return DateTime.MinValue;
-            }
-            else
-            {
-                //copy the file to avoid sharing violations
-                string copyPath = path.Replace("Editor.log", "Editor.log.copy");
-                File.Copy(path, copyPath, true);
-
-                string text = File.ReadAllText(copyPath);
-                string find = "LICENSE SYSTEM [";
-                int start = text.IndexOf(find);
-                if (start != -1)
-                {
-                    string data = text.Substring(start + find.Length, 100).Split(']')[0];
-                    string year = data.Substring(0, 4);
-                    string month = "";
-                    string day = "";
-                    string rest = data.Substring(4).Split(' ')[0];
-
-                    if (rest.Length == 2)
+                    if (DateTime.TryParseExact(logTimeString, "yyyy-dd-MM HH:mm:ss", CultureInfo.InvariantCulture, DateTimeStyles.None, out DateTime result))
                     {
-                        //only 2 digits, so first is month, and other is day
-                        month = int.Parse(rest[0].ToString()).ToString("00");
-                        day = int.Parse(rest[1].ToString()).ToString("00");
+                        return result;
                     }
-                    else if (rest.Length == 3)
+                    else
                     {
-                        //first digit is the month, and other 2 is the day
-                        month = int.Parse(rest[0].ToString()).ToString("00");
-                        day = rest.Substring(1, 2);
+                        return DateTime.Now;
                     }
-                    else if (rest.Length == 4)
-                    {
-                        //2 for month, 2 for day
-                        month = rest.Substring(0, 2);
-                        day = rest.Substring(2, 2);
-                    }
-
-                    string hour = int.Parse(data.Split(' ')[1].Split(':')[0]).ToString("00");
-                    string minute = int.Parse(data.Split(' ')[1].Split(':')[1]).ToString("00");
-                    string second = int.Parse(data.Split(' ')[1].Split(':')[2]).ToString("00");
-
-                    string logTimeString = $"{year}-{month}-{day} {hour}:{minute}:{second}";
-                    return DateTime.ParseExact(logTimeString, "yyyy-dd-MM HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
                 }
                 else
                 {

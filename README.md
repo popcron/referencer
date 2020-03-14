@@ -1,10 +1,8 @@
 # Referencer
-Used for getting a reference to all assets in the project. Which automatically listens for file changes and ensures that all registered assets can be referenced at runtime without the need of manually creating lists and fields to keep track.
-
-*Note: This was created so I could reference all of my assets via code with a single line. I'm lazy.*
+This is a simple utility that lets you get an asset in the project by its name without setting anything up, both in editor and runtime.
 
 ## Requirements
-- .NET Framework 3.5
+- Git
 
 ## Installation
 If using 2018.3.x, you can add a new entry to the manifest.json file in your Packages folder:
@@ -14,25 +12,33 @@ If using 2018.3.x, you can add a new entry to the manifest.json file in your Pac
 
 ## Example
 ```cs
-//load using an absolute path
-playerSprite = Referencer.Get<Sprite>("Art/Sprites/Player.psd/Player_0");
+//load using the full path
+Sprite playerSprite = Refs.Get<Sprite>("Art/Sprites/Player.psd/Player_0");
+
+//or load using just the name
+playerSprite = Refs.Get<Sprite>("Player_0");
 
 //load using just the name, if there are duplicates it will find the first one
-gunSprite = Referencer.Get<Sprite>("GunSprite");
+GameObject playerPrefab = Refs.Get<GameObject>("Player");
 
 //returns all scriptable objects of type Gun
-List<Gun> allGuns = Referencer.GetAll<Gun>();
-//List<Gun> allGuns = Referencer.GetAll(typeof(Gun));
+List<Gun> allGuns = Refs.GetAll<Gun>();
 
 //gets the original path of the sprite asset
-string path = Referencer.GetPath(gunSprite);
+string path = Refs.GetPath(gunSprite);
 
 //returns a random gun
-Gun randomGun = Referencer.GetRandom<Gun>();
+Gun randomGun = Refs.GetRandom<Gun>();
+
+//for loops through every asset loaded
+foreach (Reference reference in Refs.Assets)
+{
+    Debug.Log($"loaded in {reference.Object} at path {reference.Path}");
+}
 ```
 
-## Loaders
-This package contains loaders for the follwing types:
+## Types of assets
+This utility will load all assets of these types in:
 - AudioClips
 - Fonts
 - Materials
@@ -41,27 +47,21 @@ This package contains loaders for the follwing types:
 - ScriptableObjects
 - Sprite and Sprite sub assets
 - Textures
+- Shaders
+- TextAsset
 
-To create a custom loader, you can inherit from the `AssetLoader` type. For an example, see the loaders provided for the listed types in the Loaders folder.
-
-**ScriptableObject IDs**
-
-Included is the ScriptableObject loader, which will load all found types into the references. It will also check if the type has an ID property or id field. This gives the references an extra piece of information for the loaded object, which will also allow you to load an object using its ID.
+**Assets with IDs**
+Included is the ScriptableObject loader, which will load all found types into the references. It will also check if the type has an `ID` property or `id` field. This gives the reference an extra piece of information for the loaded object, which will allow you to load the asset using its ID:
 ```cs
 //get a gun scriptable object asset that has an ID of 12
 int id = 12;
-Gun gun = References.Get<Gun>(id);
+Gun gun = Refs.Get<Gun>(id);
 ```
 
-## Settings
-The `Settings` class has a static property called `Current`. This property holds the settings that are used by the loader. If provided with a custom value it will use that one instead of the defaults. If given null, it will use defaults.
-
-The class contains fields for where the reference file should be stored, default is `Assets/References.asset`. As well as an array for which folders and extensions should be ignored.
+## Git ignore
+So the references database is stored at `Assets/References.asset`, and this should be ignored in source control because this asset is always regenerated.
 
 ## FAQ
 - **What namespace?** Popcron.Referencer
 - **It loads everything?** Yes
-- **Can I use it at runtime?** Yes
 - **Is it optimized?** For speed, yes
-- **How can I ignore folder X?** Provide a value to `Settings.Current` with your own ignoreFolders value
-- **Can I make my own loader?** Yes, inherit from the `AssetLoader` type

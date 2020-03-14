@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using UnityEngine;
+
+using Object = UnityEngine.Object;
+using Random = System.Random;
 
 namespace Popcron.Referencer
 {
-    using Object = UnityEngine.Object;
-    using Random = System.Random;
-
     public class References : ScriptableObject
     {
         private static Random random = null;
 
         [SerializeField]
         private List<Reference> assets = new List<Reference>();
+
         private Dictionary<string, Reference> pathToItem = null;
         private Dictionary<string, Reference> nameToItem = null;
         private Dictionary<string, Reference> idToItem = null;
@@ -98,6 +98,22 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
+        /// Returns true if an object with this path exists.
+        /// </summary>
+        public bool Contains(Object asset)
+        {
+            for (int i = 0; i < assets.Count; i++)
+            {
+                if (assets[i].Object == asset)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Returns an object with a matching ID field or property.
         /// </summary>
         public Object Get(Type type, long id)
@@ -135,7 +151,7 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns an object with a matching ID field or property.
         /// </summary>
-        public T Get<T>(long id) where T : class => Get(typeof(T), id) as T;
+        public T Get<T>(long id) where T : Object => Get(typeof(T), id) as T;
 
         /// <summary>
         /// Returns a random object of a type.
@@ -166,7 +182,7 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns a random object of a type.
         /// </summary>
-        public T GetRandom<T>() where T : class => GetRandom(typeof(T)) as T;
+        public T GetRandom<T>() where T : Object => GetRandom(typeof(T)) as T;
 
         /// <summary>
         /// Returns the path of an object. It will return null if the object isnt tracked.
@@ -253,7 +269,7 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns an object with using the name or path with this type.
         /// </summary>
-        public T Get<T>(string name) where T : class => Get(typeof(T), name) as T;
+        public T Get<T>(string name) where T : Object => Get(typeof(T), name) as T;
 
         /// <summary>
         /// Returns all objecst of a type.
@@ -275,18 +291,15 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns all objects of a type and the parent types too.
         /// </summary>
-        public List<T> GetAll<T>(bool customOnly = false) where T : class
+        public List<T> GetAll<T>() where T : Object
         {
             Type type = typeof(T);
             List<T> result = new List<T>();
-            if (!customOnly)
+            for (int i = 0; i < assets.Count; i++)
             {
-                for (int i = 0; i < assets.Count; i++)
+                if (assets[i].Type == type || type.IsAssignableFrom(assets[i].Type))
                 {
-                    if (assets[i].Type == type || type.IsAssignableFrom(assets[i].Type))
-                    {
-                        result.Add(assets[i].Object as T);
-                    }
+                    result.Add(assets[i].Object as T);
                 }
             }
 
@@ -313,9 +326,16 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns all raw references of a type.
         /// </summary>
-        public List<Reference> GetAllReferences<T>() where T : class
+        public List<Reference> GetAllReferences<T>() where T : Object
         {
-            Type type = typeof(T);
+            return GetAllReferences(typeof(T));
+        }
+
+        /// <summary>
+        /// Returns all raw references of a type.
+        /// </summary>
+        public List<Reference> GetAllReferences(Type type)
+        {
             List<Reference> result = new List<Reference>();
             for (int i = 0; i < assets.Count; i++)
             {
@@ -333,7 +353,7 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
-        /// Adds an item to the list of references manually. Returns true if successful
+        /// Adds an item to the list of builtin references manually. Returns true if successfull.
         /// </summary>
         public bool Add(Reference item)
         {
