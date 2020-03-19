@@ -64,7 +64,14 @@ namespace Popcron.Referencer
             Debug.Log(builder.ToString());
 
             //just in case
-            EditorSceneManager.OpenScene(originalScene.path, OpenSceneMode.Single);
+            try
+            {
+                EditorSceneManager.OpenScene(originalScene.path, OpenSceneMode.Single);
+            }
+            catch
+            {
+                //sometimes its ""
+            }
         }
     }
 }
