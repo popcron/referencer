@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 [Serializable]
 public class Reference
@@ -12,7 +13,7 @@ public class Reference
     private string path;
 
     [SerializeField]
-    private UnityEngine.Object unityObject;
+    private Object unityObject;
 
     [SerializeField]
     private string typeName;
@@ -26,7 +27,7 @@ public class Reference
     /// <summary>
     /// Reference to the asset itself.
     /// </summary>
-    public UnityEngine.Object Object => unityObject;
+    public Object Object => unityObject;
 
     /// <summary>
     /// The type of this referenced asset.
@@ -135,7 +136,7 @@ public class Reference
     public string Path
     {
         get => path;
-        set => path = value;
+        set => path = value.Replace('\\', '/');
     }
 
     /// <summary>
@@ -158,7 +159,29 @@ public class Reference
         }
     }
 
-    public Reference(UnityEngine.Object unityObject, Type type, string path)
+    /// <summary>
+    /// Updates the asset that this reference is pointing to.
+    /// </summary>
+    public void SetObject(Object unityObject)
+    {
+        if (unityObject)
+        {
+            if (Type == unityObject.GetType())
+            {
+                this.unityObject = unityObject;
+            }
+            else
+            {
+                Debug.LogError($"{unityObject} is not an asset of type {Type}");
+            }
+        }
+        else
+        {
+            Debug.LogError($"Tried to assign reference at path {path} a null object");
+        }
+    }
+
+    public Reference(Object unityObject, Type type, string path)
     {
         string key = "Assets/";
         int index = path.IndexOf(key, StringComparison.OrdinalIgnoreCase);

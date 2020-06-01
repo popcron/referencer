@@ -38,7 +38,7 @@ namespace Popcron.Referencer
         /// <summary>
         /// Removes a reference at this path.
         /// </summary>
-        public void Remove(string path)
+        public bool Remove(string path)
         {
             path = path.Replace('\\', '/');
             for (int i = 0; i < assets.Count; i++)
@@ -47,9 +47,13 @@ namespace Popcron.Referencer
                 {
                     assets.RemoveAt(i);
                     assetsReadOnly = assets.AsReadOnly();
-                    return;
+                    objectToPath.Remove(assets[i].Object);
+                    pathToItem.Remove(path);
+                    return true;
                 }
             }
+
+            return false;
         }
 
         /// <summary>
@@ -85,6 +89,11 @@ namespace Popcron.Referencer
         /// </summary>
         public bool Contains(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
             path = path.Replace('\\', '/');
             for (int i = 0; i < assets.Count; i++)
             {
@@ -102,6 +111,11 @@ namespace Popcron.Referencer
         /// </summary>
         public bool Contains(Object asset)
         {
+            if (!asset)
+            {
+                return false;
+            }
+
             for (int i = 0; i < assets.Count; i++)
             {
                 if (assets[i].Object == asset)
@@ -191,7 +205,7 @@ namespace Popcron.Referencer
         {
             EnsureCacheExists();
 
-            if (objectToPath != null)
+            if (objectToPath != null && value)
             {
                 if (objectToPath.TryGetValue(value, out string path))
                 {
@@ -357,16 +371,9 @@ namespace Popcron.Referencer
         /// </summary>
         public bool Add(Reference item)
         {
-#if UNITY_EDITOR
-            //add as long as its not in the game folder
-            if (item.Path.IndexOf("Assets/Game", StringComparison.OrdinalIgnoreCase) != -1)
-            {
-                return false;
-            }
-#endif
-            //first check if it already exists
+            //first check with path and asset if it already exists
             //if it does, dont add
-            if (Contains(item.Path))
+            if (Contains(item.Path) || Contains(item.Object))
             {
                 return false;
             }
@@ -409,29 +416,16 @@ namespace Popcron.Referencer
             assetsReadOnly = assets.AsReadOnly();
 
             //add to dictionaries
-            if (!pathToItem.ContainsKey(path))
-            {
-                pathToItem.Add(path, item);
-            }
-
-            if (!nameToItem.ContainsKey(typeNameAndName))
-            {
-                nameToItem.Add(typeNameAndName, item);
-            }
+            pathToItem[path] = item;
+            nameToItem[typeNameAndName] = item;
 
             if (id != null)
             {
                 string idAndTypeName = $"{id.Value}:{type.FullName}";
-                if (!idToItem.ContainsKey(idAndTypeName))
-                {
-                    idToItem.Add(idAndTypeName, item);
-                }
+                idToItem[idAndTypeName] = item;
             }
 
-            if (!objectToPath.ContainsKey(unityObject))
-            {
-                objectToPath.Add(unityObject, path);
-            }
+            objectToPath[unityObject] = path;
 
             return true;
         }

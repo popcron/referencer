@@ -4,15 +4,60 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace Popcron.Referencer
 {
     [InitializeOnLoad]
     public class Initializer
     {
+        public const string InitializedScenesKey = "Popcron.Referencer.Editor.ScenesInitialized";
+
+        private static bool IsSceneInitialized(string sceneName)
+        {
+            string scenesInitialized = EditorPrefs.GetString(InitializedScenesKey);
+            if (string.IsNullOrEmpty(scenesInitialized))
+            {
+                return false;
+            }
+
+            List<string> names = scenesInitialized.Split('\\').ToList();
+            return names.Contains(sceneName);
+        }
+
+        private static void SetSceneInitialized(string sceneName, bool state)
+        {
+            string scenesInitialized = EditorPrefs.GetString(InitializedScenesKey);
+            if (string.IsNullOrEmpty(scenesInitialized))
+            {
+                EditorPrefs.SetString(InitializedScenesKey, state ? sceneName : "");
+            }
+
+            List<string> names = scenesInitialized.Split('\\').ToList();
+            if (names.Contains(sceneName) && !state)
+            {
+                names.Remove(sceneName);
+            }
+            else if (!names.Contains(sceneName) && state)
+            {
+                names.Add(sceneName);
+            }
+
+            EditorPrefs.SetString(InitializedScenesKey, string.Join("\\", names));
+        }
+
+        private static void ResetInitializedScenes()
+        {
+            EditorPrefs.SetString(InitializedScenesKey, "");
+        }
+
         static Initializer()
         {
+            EditorSceneManager.activeSceneChangedInEditMode += OnChangedScene;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+
             bool update = false;
 
             //find the .gitignore file by searching upwards 3 times
@@ -34,6 +79,7 @@ namespace Popcron.Referencer
                     }
                     else
                     {
+
                     }
 
                     ignoreLines.Add(entry);
@@ -53,7 +99,8 @@ namespace Popcron.Referencer
             if (lastTimeSinceStartup > EditorApplication.timeSinceStartup)
             {
                 update = true;
-                Debug.Log("[Referencer] Loading all assets on startup");
+                ResetInitializedScenes();
+                //Debug.Log("[Referencer] Loading all assets on startup");
             }
 
             //check against license file time
@@ -66,7 +113,8 @@ namespace Popcron.Referencer
                 {
                     //if editor log doesnt exist, then update
                     update = true;
-                    Debug.Log("[Referencer] An Editor log was not found, gonna load all assets.");
+                    ResetInitializedScenes();
+                    //Debug.Log("[Referencer] An Editor log was not found, gonna load all assets.");
                 }
                 else
                 {
@@ -85,7 +133,8 @@ namespace Popcron.Referencer
                     {
                         EditorPrefs.SetString(key, then.ToLongDateString());
                         update = true;
-                        Debug.Log("[Referencer] Loading all assets on startup.");
+                        ResetInitializedScenes();
+                        //Debug.Log("[Referencer] Loading all assets on startup.");
                     }
                 }
             }
@@ -97,7 +146,8 @@ namespace Popcron.Referencer
                 if (references.Count == 0)
                 {
                     update = true;
-                    Debug.Log("[Referencer] No References asset file was found, creating new one.");
+                    ResetInitializedScenes();
+                    //Debug.Log("[Referencer] No References asset file was found, creating new one.");
                 }
             }
 
@@ -105,6 +155,34 @@ namespace Popcron.Referencer
             {
                 References references = Helper.LoadAll();
                 Helper.PutInsideContainer(references);
+            }
+        }
+
+        private static void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            Scene scene = SceneManager.GetActiveScene();
+            if (state == PlayModeStateChange.ExitingEditMode)
+            {
+                if (!IsSceneInitialized(scene.name))
+                {
+                    References references = Helper.LoadAll();
+                    Helper.PutInsideContainer(references);
+                    Debug.Log("[Referencer] Loaded all because were about to play the scene when its not initialized");
+
+                    SetSceneInitialized(scene.name, true);
+                }
+            }
+        }
+
+        private static void OnChangedScene(Scene oldScene, Scene newScene)
+        {
+            if (!IsSceneInitialized(newScene.name))
+            {
+                References references = Helper.LoadAll();
+                Helper.PutInsideContainer(references);
+                Debug.Log("[Referencer] Loaded all because we changed to a scene that isnt initialized");
+
+                SetSceneInitialized(newScene.name, true);
             }
         }
 

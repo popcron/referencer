@@ -49,35 +49,22 @@ namespace Popcron.Referencer
         /// </summary>
         public static List<string> FindAssets(string filter)
         {
-            Settings settings = Settings.Current ?? new Settings();
-
+            Settings settings = Settings.Current;
             List<string> paths = new List<string>();
             List<string> assets = Relay.FindAssets(filter);
-            foreach (string path in assets)
+            for (int i = 0; i < assets.Count; i++)
             {
-                if (path.Equals(settings.referencesAssetPath, StringComparison.OrdinalIgnoreCase))
+                string path = assets[i];
+                if (path.Equals(settings.ReferencesAssetPath, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                string newPath = path.Replace("Assets/", "");
-
-                bool ignore = false;
-                foreach (string ignoredFolder in settings.ignoredFolders)
+                path = path.Replace("Assets/", "");
+                if (!settings.IsBlacklisted(path))
                 {
-                    if (newPath.StartsWith(ignoredFolder))
-                    {
-                        ignore = true;
-                        break;
-                    }
+                    paths.Add(path);
                 }
-
-                if (ignore)
-                {
-                    break;
-                }
-
-                paths.Add(newPath);
             }
 
             return paths;

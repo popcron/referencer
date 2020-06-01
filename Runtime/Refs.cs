@@ -7,7 +7,7 @@ using Type = System.Type;
 /// <summary>
 /// A static pointer to the references list instance.
 /// </summary>
-public class Refs
+public struct Refs
 {
     private static ReferencesContainer container;
 
@@ -22,7 +22,7 @@ public class Refs
             {
                 container = Object.FindObjectOfType<ReferencesContainer>();
 
-                //still no container
+                //still no container so create a new one!!!
                 if (!container)
                 {
                     container = new GameObject(nameof(References)).AddComponent<ReferencesContainer>();
@@ -73,6 +73,35 @@ public class Refs
     /// Returns true if the references has this asset registered.
     /// </summary>
     public static bool Contains(Object asset) => Instance.Contains(asset);
+
+    /// <summary>
+    /// Adds a new reference to the internal list manually.
+    /// Returns true if it was successfull.
+    /// </summary>
+    public static bool Add(Reference reference) => Instance.Add(reference);
+
+    /// <summary>
+    /// Removes a reference from the internal list.
+    /// Returns true if successfull.
+    /// </summary>
+    public static bool Remove(Reference reference)
+    {
+        for (int i = 0; i < Instance.Assets.Count; i++)
+        {
+            if (Instance.Assets[i] == reference)
+            {
+                return Instance.Remove(reference.Path);
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Removes a reference from the internal list using the path.
+    /// Returns true if successfull.
+    /// </summary>
+    public static bool Remove(string path) => Instance.Remove(path);
 
     /// <summary>
     /// Returns a list of all assets with this type.

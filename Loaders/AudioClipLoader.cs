@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Popcron.Referencer
 {
@@ -11,14 +12,17 @@ namespace Popcron.Referencer
         public override List<Reference> LoadAll()
         {
             List<Reference> items = new List<Reference>();
-            List<string> paths = Loader.FindAssets("t:" + Type.Name);
+            List<string> paths = Loader.FindAssets($"t:{Type.Name}");
             List<string> processedPaths = new List<string>();
-            foreach (string path in paths)
+            for (int i = 0; i < paths.Count; i++)
             {
-                if (processedPaths.Contains(path)) continue;
+                string path = paths[i];
+                if (processedPaths.Contains(path))
+                {
+                    continue;
+                }
 
                 processedPaths.Add(path);
-
                 items.AddRange(Load(path));
             }
 
@@ -27,7 +31,7 @@ namespace Popcron.Referencer
 
         public override List<Reference> Load(string path)
         {
-            var audioClip = Loader.LoadAssetAtPath(path, Type);
+            Object audioClip = Loader.LoadAssetAtPath(path, Type);
             Reference item = new Reference(audioClip, Type, path);
             return new List<Reference>() { item };
         }

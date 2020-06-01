@@ -20,8 +20,8 @@ namespace Popcron.Referencer
         {
             get
             {
-                Settings settings = Settings.Current ?? new Settings();
-                string path = settings.referencesAssetPath;
+                Settings settings = Settings.Current;
+                string path = settings.ReferencesAssetPath;
                 return AssetDatabase.LoadAssetAtPath<References>(path) != null;
             }
         }
@@ -36,8 +36,8 @@ namespace Popcron.Referencer
             if (!references)
             {
                 //null, try to find again from assets
-                Settings settings = Settings.Current ?? new Settings();
-                string path = settings.referencesAssetPath;
+                Settings settings = Settings.Current;
+                string path = settings.ReferencesAssetPath;
                 References newReferences = AssetDatabase.LoadAssetAtPath<References>(path);
                 if (!newReferences)
                 {
@@ -61,8 +61,7 @@ namespace Popcron.Referencer
         /// </summary>
         public static References LoadAll(References references = null)
         {
-            Settings settings = Settings.Current ?? new Settings();
-
+            Settings settings = Settings.Current;
             if (Application.isPlaying)
             {
                 Debug.Log("[Referencer] Loading everything at runtime!");
@@ -78,7 +77,7 @@ namespace Popcron.Referencer
 
             //check if this reference exists as an instance in the project
             string realPath = AssetDatabase.GetAssetPath(references);
-            if (!realPath.Equals(settings.referencesAssetPath))
+            if (!realPath.Equals(settings.ReferencesAssetPath, StringComparison.OrdinalIgnoreCase))
             {
                 //not an actual reference instance, so create a new one and replace it
                 references = ScriptableObject.CreateInstance<References>();
@@ -103,6 +102,13 @@ namespace Popcron.Referencer
                 for (int i = 0; i < items.Count; i++)
                 {
                     Reference item = items[i];
+
+                    //check against settings
+                    if (Settings.Current.IsBlacklisted(item.Path))
+                    {
+                        continue;
+                    }
+
                     bool added = references.Add(item);
                     if (added)
                     {
@@ -111,13 +117,13 @@ namespace Popcron.Referencer
                 }
             }
 
-            Debug.Log($"[Referencer] Loaded in {loadedItems} assets into the references.");
+            //Debug.Log($"[Referencer] Loaded in {loadedItems} assets into the references.");
             if (created)
             {
                 if (!DoesReferenceInstanceExist)
                 {
                     //write to disk lmao
-                    AssetDatabase.CreateAsset(references, settings.referencesAssetPath);
+                    AssetDatabase.CreateAsset(references, settings.ReferencesAssetPath);
                 }
 
                 SetDirty(references);
@@ -137,24 +143,30 @@ namespace Popcron.Referencer
         public static void PutInsideContainer(References references)
         {
             //delete all containers ever but one
+            bool dirty = false;
             ReferencesContainer[] containers = Object.FindObjectsOfType<ReferencesContainer>();
-            for (int i = 0; i < containers.Length - 1; i++)
+            if (containers.Length > 1)
             {
-                ReferencesContainer container = containers[i];
-                if (Application.isPlaying)
+                for (int i = 1; i < containers.Length; i++)
                 {
-                    Object.Destroy(container.gameObject);
-                }
-                else
-                {
-                    Object.DestroyImmediate(container.gameObject);
+                    ReferencesContainer container = containers[i];
+                    if (Application.isPlaying)
+                    {
+                        Object.Destroy(container.gameObject);
+                    }
+                    else
+                    {
+                        Object.DestroyImmediate(container.gameObject);
+                    }
+
+                    dirty = true;
                 }
             }
 
             ReferencesContainer newContainer;
             if (containers.Length == 1)
             {
-                //use an existing one lmao
+                //use an existing one lmaoooo
                 newContainer = containers[0];
             }
             else
@@ -162,13 +174,22 @@ namespace Popcron.Referencer
                 //make a new one and put it in
                 GameObject gameObject = new GameObject(nameof(References));
                 newContainer = gameObject.AddComponent<ReferencesContainer>();
+                dirty = true;
             }
 
-            newContainer.references = references;
+            if (newContainer.references != references)
+            {
+                newContainer.references = references;
+                dirty = true;
+            }
 
             Scene scene = SceneManager.GetActiveScene();
-            Debug.Log($"[Referencer] Placed references into container in scene at {scene.path}.");
-            SetSceneDirty();
+            if (dirty)
+            {
+                SetSceneDirty();
+            }
+
+            //Debug.Log($"[Referencer] Placed references into container in scene at {scene.path}");
         }
 
         //reflected by Relay

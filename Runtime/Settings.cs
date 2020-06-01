@@ -4,13 +4,28 @@ using UnityEngine;
 
 namespace Popcron.Referencer
 {
-    [Serializable]
-    public class Settings
+    public class Settings : ScriptableObject
     {
+        private static Settings current;
+
         //constants
         public const string UniqueIdentifier = "Popcron.Referencer.Settings";
         public const string SettingsKey = UniqueIdentifier + ".IgnoredFolders";
         public const string GameObjectNameKey = UniqueIdentifier + ".GameObject";
+
+        /// <summary>
+        /// Path to the file that should store the settings asset.
+        /// </summary>
+        private static string PathToFile
+        {
+            get
+            {
+                string dir = Directory.GetParent(Application.dataPath).FullName;
+                dir = Path.Combine(dir, "ProjectSettings");
+                string fileName = "ReferencerSettings.asset";
+                return Path.Combine(dir, fileName);
+            }
+        }
 
         /// <summary>
         /// The current settings data being used.
@@ -20,52 +35,57 @@ namespace Popcron.Referencer
         {
             get
             {
-                string value = PlayerPrefs.GetString(SettingsKey);
-                if (!string.IsNullOrEmpty(value))
+                if (!current)
                 {
-                    Settings settings = JsonUtility.FromJson<Settings>(value);
-                    return settings;
+                    current = CreateInstance<Settings>();
+                    if (File.Exists(PathToFile))
+                    {
+                        //try to load from file first
+                        string json = File.ReadAllText(PathToFile);
+                        try
+                        {
+                            JsonUtility.FromJsonOverwrite(json, current);
+                        }
+                        catch
+                        {
+
+                        }
+                    }
                 }
-                else
-                {
-                    return null;
-                }
-            }
-            set
-            {
-                if (value == null)
-                {
-                    PlayerPrefs.DeleteKey(SettingsKey);
-                }
-                else
-                {
-                    string json = JsonUtility.ToJson(value);
-                    PlayerPrefs.SetString(SettingsKey, json);
-                }
+
+                return current;
             }
         }
 
-        //actual settings
-        public string referencesAssetPath = "Assets/References.asset";
-        public string[] ignoredFolders = { };
-        public string[] ignoreExtensions = { };
-
-        public bool ShouldIgnorePath(string path)
+        /// <summary>
+        /// Saves this settings to a local file.
+        /// </summary>
+        public void Save()
         {
-            //check folders
-            for (int i = 0; i < ignoredFolders.Length; i++)
-            {
-                if (path.StartsWith(ignoredFolders[i], StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
+            string json = JsonUtility.ToJson(this, true);
+            File.WriteAllText(PathToFile, json);
+        }
 
-            //check extensions
-            string extension = Path.GetExtension(path);
-            for (int i = 0; i < ignoreExtensions.Length; i++)
+        [SerializeField]
+        private string referencesAssetPath = "Assets/References.asset";
+
+        [SerializeField]
+        private string[] blacklistFilter = { "Resources/", "Game/", ".html" };
+
+        /// <summary>
+        /// Path to the references asset file.
+        /// Example: Assets/References.asset
+        /// </summary>
+        public string ReferencesAssetPath => referencesAssetPath;
+
+        /// <summary>
+        /// Returns true if this path has overlap with the blacklist filter.
+        /// </summary>
+        public bool IsBlacklisted(string path)
+        {
+            for (int i = 0; i < blacklistFilter.Length; i++)
             {
-                if (extension.Equals(ignoreExtensions[i], StringComparison.OrdinalIgnoreCase))
+                if (path.IndexOf(blacklistFilter[i], StringComparison.OrdinalIgnoreCase) != -1)
                 {
                     return true;
                 }

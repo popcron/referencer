@@ -34,21 +34,24 @@ namespace Popcron.Referencer
             Helper.SetSceneDirty();
         }
 
-        private static void Add(string path, References references)
+        private static bool Add(string path, References references)
         {
+            bool added = false;
             Type type = AssetDatabase.GetMainAssetTypeAtPath(path);
 
             //if a sprite was edited, also try to load using a sprite loader
             if (type == typeof(Texture2D))
             {
-                Add(path, typeof(Sprite), references);
+                added |= Add(path, typeof(Sprite), references);
             }
 
-            Add(path, type, references);
+            added |= Add(path, type, references);
+            return added;
         }
 
-        private static void Add(string path, Type type, References references)
+        private static bool Add(string path, Type type, References references)
         {
+            bool added = false;
             AssetLoader loader = AssetLoader.Get(type);
             if (loader != null)
             {
@@ -56,18 +59,20 @@ namespace Popcron.Referencer
                 List<Reference> items = loader.Load(path);
                 foreach (Reference item in items)
                 {
-                    references.Add(item);
+                    added |= references.Add(item);
                 }
             }
+
+            return added;
         }
 
-        private static void Remove(string path, References references)
+        private static bool Remove(string path, References references)
         {
             path = path.Replace("Assets/", "");
-            references.Remove(path);
+            return references.Remove(path);
         }
 
-        private static void Move(string oldPath, string newPath, References references)
+        private static bool Move(string oldPath, string newPath, References references)
         {
             oldPath = oldPath.Replace("Assets/", "");
             newPath = newPath.Replace("Assets/", "");
@@ -76,6 +81,11 @@ namespace Popcron.Referencer
             if (item != null)
             {
                 item.Path = newPath;
+                return true;
+            }
+            else
+            {
+                return false;
             }
         }
 
@@ -92,65 +102,67 @@ namespace Popcron.Referencer
             }
 
             references = Helper.GetReferencesInstance(false);
-            Settings settings = Settings.Current ?? new Settings();
+            Settings settings = Settings.Current;
+            bool dirty = false;
 
             //add these assets
-            foreach (string path in importedAssets)
+            for (int i = 0; i < importedAssets.Length; i++)
             {
+                string path = importedAssets[i];
+
                 //ignore the reference asset file
-                if (path == settings.referencesAssetPath)
+                if (path.Equals(settings.ReferencesAssetPath, StringComparison.OrdinalIgnoreCase))
                 {
                     continue;
                 }
 
-                if (settings.ShouldIgnorePath(path))
+                if (settings.IsBlacklisted(path))
                 {
                     continue;
                 }
 
-                Add(path, references);
-
-                //mark as dirty
-                Helper.SetDirty(references);
+                dirty |= Add(path, references);
             }
 
             //remove these assets
-            foreach (string path in deletedAssets)
+            for (int i = 0; i < deletedAssets.Length; i++)
             {
+                string path = deletedAssets[i];
+
                 //if the deleted file is the references asset itself
                 //then do a full reload
-                if (path == settings.referencesAssetPath)
+                if (path.Equals(settings.ReferencesAssetPath, StringComparison.OrdinalIgnoreCase))
                 {
                     Debug.Log("[Referencer] References asset was deleted.");
                     continue;
                 }
 
-                if (settings.ShouldIgnorePath(path))
+                if (settings.IsBlacklisted(path))
                 {
                     continue;
                 }
 
-                Remove(path, references);
-
-                //mark as dirty
-                Helper.SetDirty(references);
+                dirty |= Remove(path, references);
             }
 
             //delete and add
             for (int i = 0; i < movedAssets.Length; i++)
             {
-                if (settings.ShouldIgnorePath(movedFromAssetPaths[i]))
+                if (settings.IsBlacklisted(movedFromAssetPaths[i]))
                 {
                     continue;
                 }
 
-                if (settings.ShouldIgnorePath(movedAssets[i]))
+                if (settings.IsBlacklisted(movedAssets[i]))
                 {
                     continue;
                 }
 
-                Move(movedFromAssetPaths[i], movedAssets[i], references);
+                dirty |= Move(movedFromAssetPaths[i], movedAssets[i], references);
+            }
 
+            if (dirty)
+            {
                 //mark as dirty
                 Helper.SetDirty(references);
             }
