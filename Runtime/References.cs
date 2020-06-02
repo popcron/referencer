@@ -47,8 +47,9 @@ namespace Popcron.Referencer
                 {
                     assets.RemoveAt(i);
                     assetsReadOnly = assets.AsReadOnly();
-                    objectToPath.Remove(assets[i].Object);
-                    pathToItem.Remove(path);
+
+                    //have to recreate the objectToPath dict
+                    EnsureCacheExists(true);
                     return true;
                 }
             }
@@ -430,10 +431,10 @@ namespace Popcron.Referencer
             return true;
         }
 
-        internal void EnsureCacheExists()
+        internal void EnsureCacheExists(bool forceRecreate = false)
         {
             bool errorFound = false;
-            if (pathToItem == null)
+            if (pathToItem == null || forceRecreate)
             {
                 pathToItem = new Dictionary<string, Reference>();
 
@@ -463,7 +464,7 @@ namespace Popcron.Referencer
                 }
             }
 
-            if (nameToItem == null)
+            if (nameToItem == null || forceRecreate)
             {
                 nameToItem = new Dictionary<string, Reference>();
 
@@ -500,7 +501,7 @@ namespace Popcron.Referencer
                 }
             }
 
-            if (idToItem == null)
+            if (idToItem == null || forceRecreate)
             {
                 idToItem = new Dictionary<string, Reference>();
 
@@ -543,7 +544,7 @@ namespace Popcron.Referencer
                 }
             }
 
-            if (objectToPath == null)
+            if (objectToPath == null || forceRecreate)
             {
                 objectToPath = new Dictionary<Object, string>();
 
