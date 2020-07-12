@@ -51,17 +51,18 @@ namespace Popcron.Referencer
 
             //draw the list
             Event e = Event.current;
-            EditorGUILayout.PropertyField(assets, new GUIContent(title), false);
+            assets.isExpanded = EditorGUILayout.Foldout(assets.isExpanded, new GUIContent(title), true);
             if (assets.isExpanded)
             {
                 float lineHeight = 22f;
                 for (int i = 0; i < list.Count; i++)
                 {
+                    Reference element = list[i];
                     Color color = i % 2 == 0 ? Color.white : Color.gray;
                     color.a = 0.1f;
 
                     //if selected
-                    if (list[i].Path.Equals(selectedAsset, StringComparison.OrdinalIgnoreCase))
+                    if (element.Path.Equals(selectedAsset, StringComparison.OrdinalIgnoreCase))
                     {
                         color = GUI.skin.settings.selectionColor;
                     }
@@ -76,11 +77,11 @@ namespace Popcron.Referencer
                             if (e.clickCount == 2)
                             {
                                 //double click, point to file
-                                EditorGUIUtility.PingObject(list[i].Object);
+                                EditorGUIUtility.PingObject(element.Object);
                             }
 
                             //clicked here
-                            selectedAsset = list[i].Path;
+                            selectedAsset = element.Path;
                             Repaint();
                             break;
                         }
@@ -90,20 +91,20 @@ namespace Popcron.Referencer
 
                         //fits on screen, so draw the icon first
                         Rect iconPosition = new Rect(rect.x, rect.y, rect.height, rect.height);
-                        GUI.DrawTexture(iconPosition, EditorGUIUtility.ObjectContent(list[i].Object, list[i].Type).image);
+                        GUI.DrawTexture(iconPosition, EditorGUIUtility.ObjectContent(element.Object, element.Type).image);
 
                         //then draw the label
                         Rect labelPosition = new Rect(rect.x + rect.height, rect.y, rect.width - rect.height, rect.height);
 
-                        string tooltip = $"Path: {list[i].Path}\nType: {list[i].Type}";
-                        if (list[i].Object)
+                        string tooltip = $"Path: {element.Path}\nType: {element.Type}";
+                        if (element.Object)
                         {
-                            GUIContent label = new GUIContent(list[i].Object.name, tooltip);
+                            GUIContent label = new GUIContent(element.Object.name, tooltip);
                             EditorGUI.LabelField(labelPosition, label);
                         }
                         else
                         {
-                            GUIContent label = new GUIContent(list[i].Path, tooltip);
+                            GUIContent label = new GUIContent(element.Path, tooltip);
                             EditorGUI.LabelField(labelPosition, label);
                         }
                     }
