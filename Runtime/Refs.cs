@@ -9,35 +9,10 @@ using Type = System.Type;
 /// </summary>
 public struct Refs
 {
-    private static ReferencesContainer container;
-
     /// <summary>
     /// A static instance of the references asset.
     /// </summary>
-    private static References Instance
-    {
-        get
-        {
-            if (!container)
-            {
-                container = Object.FindObjectOfType<ReferencesContainer>();
-
-                //still no container so create a new one!!!
-                if (!container)
-                {
-                    container = new GameObject(nameof(References)).AddComponent<ReferencesContainer>();
-                }
-            }
-
-            //nothing on the container lol
-            if (!container.references)
-            {
-                container.references = null;
-            }
-
-            return container.references;
-        }
-    }
+    public static References Instance => References.Current;
 
     /// <summary>
     /// Returns a read only list of all assets.
@@ -45,19 +20,9 @@ public struct Refs
     public static ReadOnlyCollection<Reference> Assets => Instance.Assets;
 
     /// <summary>
-    /// Returns an asset with this type and ID.
-    /// </summary>
-    public static T Get<T>(long id) where T : Object => Instance.Get<T>(id);
-
-    /// <summary>
     /// Returns an asset with this type and name.
     /// </summary>
     public static T Get<T>(string name) where T : Object => Instance.Get<T>(name);
-
-    /// <summary>
-    /// Returns an asset with this type and ID.
-    /// </summary>
-    public static Object Get(Type type, long id) => Instance.Get(type, id);
 
     /// <summary>
     /// Returns an asset with this type and name.
@@ -122,11 +87,6 @@ public struct Refs
     /// Returns a list of all references with this type.
     /// </summary>
     public static List<Reference> GetAllReferences(Type type) => Instance.GetAllReferences(type);
-
-    /// <summary>
-    /// Returns a list of all references that have an ID.
-    /// </summary>
-    public static List<Reference> GetAllReferencesWithIDs() => Instance.GetAllReferencesWithIDs();
 
     /// <summary>
     /// Returns the path of this asset, if its in the references list.

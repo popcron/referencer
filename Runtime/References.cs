@@ -11,6 +11,7 @@ namespace Popcron.Referencer
 {
     public class References : ScriptableObject
     {
+        private static References current;
         private static Random random = null;
 
         [SerializeField]
@@ -18,9 +19,21 @@ namespace Popcron.Referencer
 
         private Dictionary<string, Reference> pathToItem = null;
         private Dictionary<string, Reference> nameToItem = null;
-        private Dictionary<string, Reference> idToItem = null;
         private Dictionary<Object, string> objectToPath = null;
         private ReadOnlyCollection<Reference> assetsReadOnly = null;
+
+        public static References Current
+        {
+            get
+            {
+                if (!current)
+                {
+                    current = GetOrCreate();
+                }
+
+                return current;
+            }
+        }
 
         public ReadOnlyCollection<Reference> Assets
         {
@@ -88,6 +101,31 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns true if an object with this path exists.
         /// </summary>
+        public bool Contains(string path, Object asset)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
+            path = path.Replace('\\', '/');
+            for (int i = 0; i < assets.Count; i++)
+            {
+                if (assets[i].Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (assets[i].Object == asset)
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Returns true if an object with this path exists.
+        /// </summary>
         public bool Contains(string path)
         {
             if (string.IsNullOrEmpty(path))
@@ -127,46 +165,6 @@ namespace Popcron.Referencer
 
             return false;
         }
-
-        /// <summary>
-        /// Returns an object with a matching ID field or property.
-        /// </summary>
-        public Object Get(Type type, long id)
-        {
-            string typeName = type.FullName;
-            EnsureCacheExists();
-
-            if (idToItem != null)
-            {
-                string key = $"{id}:{typeName}";
-                if (idToItem.TryGetValue(key, out Reference item))
-                {
-                    if (item.Type == type)
-                    {
-                        return item.Object;
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-            }
-
-            for (int i = 0; i < assets.Count; i++)
-            {
-                if (assets[i].ID == id && assets[i].Type == type)
-                {
-                    return assets[i].Object;
-                }
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Returns an object with a matching ID field or property.
-        /// </summary>
-        public T Get<T>(long id) where T : Object => Get(typeof(T), id) as T;
 
         /// <summary>
         /// Returns a random object of a type.
@@ -322,23 +320,6 @@ namespace Popcron.Referencer
         }
 
         /// <summary>
-        /// Returns all references that have an ID property, or an id field.
-        /// </summary>
-        public List<Reference> GetAllReferencesWithIDs()
-        {
-            List<Reference> result = new List<Reference>();
-            for (int i = 0; i < assets.Count; i++)
-            {
-                if (assets[i].ID.HasValue)
-                {
-                    result.Add(assets[i]);
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
         /// Returns all raw references of a type.
         /// </summary>
         public List<Reference> GetAllReferences<T>() where T : Object
@@ -374,7 +355,7 @@ namespace Popcron.Referencer
         {
             //first check with path and asset if it already exists
             //if it does, dont add
-            if (Contains(item.Path) || Contains(item.Object))
+            if (Contains(item.Path, item.Object))
             {
                 return false;
             }
@@ -397,17 +378,11 @@ namespace Popcron.Referencer
                 nameToItem = new Dictionary<string, Reference>();
             }
 
-            if (idToItem == null)
-            {
-                idToItem = new Dictionary<string, Reference>();
-            }
-
             if (objectToPath == null)
             {
                 objectToPath = new Dictionary<Object, string>();
             }
 
-            long? id = Loader.GetIDFromScriptableObject(unityObject);
             Type type = item.Type;
             string path = item.Path.Replace('\\', '/');
             string name = unityObject.name;
@@ -419,13 +394,6 @@ namespace Popcron.Referencer
             //add to dictionaries
             pathToItem[path] = item;
             nameToItem[typeNameAndName] = item;
-
-            if (id != null)
-            {
-                string idAndTypeName = $"{id.Value}:{type.FullName}";
-                idToItem[idAndTypeName] = item;
-            }
-
             objectToPath[unityObject] = path;
 
             return true;
@@ -501,49 +469,6 @@ namespace Popcron.Referencer
                 }
             }
 
-            if (idToItem == null || forceRecreate)
-            {
-                idToItem = new Dictionary<string, Reference>();
-
-                //built in
-                for (int i = 0; i < assets.Count; i++)
-                {
-                    if (assets[i] == null)
-                    {
-                        errorFound = true;
-                        continue;
-                    }
-
-                    long? id = assets[i].ID;
-                    if (id == null)
-                    {
-                        continue;
-                    }
-
-                    Type type = assets[i].Type;
-                    if (type == null)
-                    {
-                        errorFound = true;
-                        continue;
-                    }
-
-                    string key = $"{id.Value}:{type.FullName}";
-                    if (!string.IsNullOrEmpty(key))
-                    {
-                        if (idToItem.ContainsKey(key))
-                        {
-                            continue;
-                        }
-
-                        idToItem.Add(key, assets[i]);
-                    }
-                    else
-                    {
-                        Debug.LogWarning($"[Referencer] {assets[i]?.Object?.name} has no path, so not adding to reference db");
-                    }
-                }
-            }
-
             if (objectToPath == null || forceRecreate)
             {
                 objectToPath = new Dictionary<Object, string>();
@@ -576,6 +501,40 @@ namespace Popcron.Referencer
             {
                 Relay.LoadAll(this);
             }
+        }
+
+        /// <summary>
+        /// Returns an existing console settings asset, or creates a new one if none exist.
+        /// </summary>
+        public static References GetOrCreate()
+        {
+            //find from resources
+            References references = Resources.Load<References>("References");
+            bool exists = references;
+            if (!exists)
+            {
+                //no console settings asset exists yet, so create one
+                references = CreateInstance<References>();
+                references.name = "References";
+            }
+
+#if UNITY_EDITOR
+            if (!exists)
+            {
+                //ensure the resources folder exists
+                if (!Directory.Exists("Assets/Resources"))
+                {
+                    Directory.CreateDirectory("Assets/Resources");
+                }
+
+                //make a file here
+                string path = "Assets/Resources/References.asset";
+                UnityEditor.AssetDatabase.CreateAsset(references, path);
+                UnityEditor.AssetDatabase.Refresh();
+            }
+#endif
+
+            return references;
         }
     }
 }

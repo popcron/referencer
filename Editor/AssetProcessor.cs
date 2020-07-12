@@ -11,27 +11,7 @@ namespace Popcron.Referencer
         [MenuItem("Popcron/Referencer/Load all")]
         public static void LoadAll()
         {
-            References references = Helper.LoadAll();
-            Helper.PutInsideContainer(references);
-        }
-
-        [MenuItem("Popcron/Referencer/Clean scene")]
-        public static void CleanScene()
-        {
-            ReferencesContainer[] containers = Object.FindObjectsOfType<ReferencesContainer>();
-            foreach (ReferencesContainer container in containers)
-            {
-                if (Application.isPlaying)
-                {
-                    Object.Destroy(container.gameObject);
-                }
-                else
-                {
-                    Object.DestroyImmediate(container.gameObject);
-                }
-            }
-
-            Helper.SetSceneDirty();
+            Helper.LoadAll();
         }
 
         private static bool Add(string path, References references)
@@ -92,16 +72,7 @@ namespace Popcron.Referencer
         private static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
             //check if the referencer even exists
-            References references;
-            if (!Helper.DoesReferenceInstanceExist)
-            {
-                Debug.Log("[Referencer] Loading new asset but a references asset isnt present.");
-                references = Helper.LoadAll();
-                Helper.PutInsideContainer(references);
-                return;
-            }
-
-            references = Helper.GetReferencesInstance(false);
+            References references = References.Current;
             Settings settings = Settings.Current;
             bool dirty = false;
 
@@ -109,13 +80,6 @@ namespace Popcron.Referencer
             for (int i = 0; i < importedAssets.Length; i++)
             {
                 string path = importedAssets[i];
-
-                //ignore the reference asset file
-                if (path.Equals(settings.ReferencesAssetPath, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
                 if (settings.IsBlacklisted(path))
                 {
                     continue;
@@ -128,15 +92,6 @@ namespace Popcron.Referencer
             for (int i = 0; i < deletedAssets.Length; i++)
             {
                 string path = deletedAssets[i];
-
-                //if the deleted file is the references asset itself
-                //then do a full reload
-                if (path.Equals(settings.ReferencesAssetPath, StringComparison.OrdinalIgnoreCase))
-                {
-                    Debug.Log("[Referencer] References asset was deleted.");
-                    continue;
-                }
-
                 if (settings.IsBlacklisted(path))
                 {
                     continue;
@@ -152,8 +107,7 @@ namespace Popcron.Referencer
                 {
                     continue;
                 }
-
-                if (settings.IsBlacklisted(movedAssets[i]))
+                else if (settings.IsBlacklisted(movedAssets[i]))
                 {
                     continue;
                 }

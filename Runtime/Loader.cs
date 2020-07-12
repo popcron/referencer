@@ -1,8 +1,5 @@
-﻿using System.Reflection;
+﻿using System;
 using System.Collections.Generic;
-using System;
-
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace Popcron.Referencer
@@ -54,13 +51,7 @@ namespace Popcron.Referencer
             List<string> assets = Relay.FindAssets(filter);
             for (int i = 0; i < assets.Count; i++)
             {
-                string path = assets[i];
-                if (path.Equals(settings.ReferencesAssetPath, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-
-                path = path.Replace("Assets/", "");
+                string path = assets[i].Replace("Assets/", "");
                 if (!settings.IsBlacklisted(path))
                 {
                     paths.Add(path);
@@ -68,55 +59,6 @@ namespace Popcron.Referencer
             }
 
             return paths;
-        }
-
-        /// <summary>
-        /// Returns an ID from this asset.
-        /// </summary>
-        public static long? GetIDFromScriptableObject(Object unityObject)
-        {
-            if (!unityObject)
-            {
-                return (long?)null;
-            }
-
-            if (unityObject is ScriptableObject)
-            {
-                long? id = null;
-                PropertyInfo property = unityObject.GetType().GetProperty("ID");
-                FieldInfo field = unityObject.GetType().GetField("id");
-
-                try
-                {
-                    //found id property
-                    if (property != null)
-                    {
-                        object value = property.GetValue(unityObject, null);
-                        if (value != null)
-                        {
-                            id = Convert.ChangeType(value, typeof(long)) as long?;
-                        }
-                    }
-                    else if (field != null)
-                    {
-                        object value = field.GetValue(unityObject);
-                        if (value != null)
-                        {
-                            id = Convert.ChangeType(value, typeof(long)) as long?;
-                        }
-                    }
-                }
-                catch
-                {
-
-                }
-
-                return id;
-            }
-            else
-            {
-                return (long?)null;
-            }
         }
     }
 }

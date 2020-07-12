@@ -2,6 +2,10 @@
 using System.IO;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace Popcron.Referencer
 {
     public class Settings : ScriptableObject
@@ -9,27 +13,12 @@ namespace Popcron.Referencer
         private static Settings current;
 
         //constants
+        public const string SettingsAssetName = "Referencer Settings.asset";
         public const string UniqueIdentifier = "Popcron.Referencer.Settings";
-        public const string SettingsKey = UniqueIdentifier + ".IgnoredFolders";
         public const string GameObjectNameKey = UniqueIdentifier + ".GameObject";
 
         /// <summary>
-        /// Path to the file that should store the settings asset.
-        /// </summary>
-        private static string PathToFile
-        {
-            get
-            {
-                string dir = Directory.GetParent(Application.dataPath).FullName;
-                dir = Path.Combine(dir, "ProjectSettings");
-                string fileName = "ReferencerSettings.asset";
-                return Path.Combine(dir, fileName);
-            }
-        }
-
-        /// <summary>
         /// The current settings data being used.
-        /// If set to null, it will use defaults
         /// </summary>
         public static Settings Current
         {
@@ -37,46 +26,15 @@ namespace Popcron.Referencer
             {
                 if (!current)
                 {
-                    current = CreateInstance<Settings>();
-                    if (File.Exists(PathToFile))
-                    {
-                        //try to load from file first
-                        string json = File.ReadAllText(PathToFile);
-                        try
-                        {
-                            JsonUtility.FromJsonOverwrite(json, current);
-                        }
-                        catch
-                        {
-
-                        }
-                    }
+                    current = GetOrCreate();
                 }
 
                 return current;
             }
         }
 
-        /// <summary>
-        /// Saves this settings to a local file.
-        /// </summary>
-        public void Save()
-        {
-            string json = JsonUtility.ToJson(this, true);
-            File.WriteAllText(PathToFile, json);
-        }
-
-        [SerializeField]
-        private string referencesAssetPath = "Assets/References.asset";
-
         [SerializeField]
         private string[] blacklistFilter = { "Resources/", "Game/", ".html" };
-
-        /// <summary>
-        /// Path to the references asset file.
-        /// Example: Assets/References.asset
-        /// </summary>
-        public string ReferencesAssetPath => referencesAssetPath;
 
         /// <summary>
         /// Returns true if this path has overlap with the blacklist filter.
@@ -92,6 +50,40 @@ namespace Popcron.Referencer
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Returns an existing console settings asset, or creates a new one if none exist.
+        /// </summary>
+        public static Settings GetOrCreate()
+        {
+            //find from resources
+            Settings settings = Resources.Load<Settings>(SettingsAssetName);
+            bool exists = settings;
+            if (!exists)
+            {
+                //no console settings asset exists yet, so create one
+                settings = CreateInstance<Settings>();
+                settings.name = SettingsAssetName;
+            }
+
+#if UNITY_EDITOR
+            if (!exists)
+            {
+                //ensure the resources folder exists
+                if (!Directory.Exists("Assets/Resources"))
+                {
+                    Directory.CreateDirectory("Assets/Resources");
+                }
+
+                //make a file here
+                string path = $"Assets/Resources/{SettingsAssetName}";
+                AssetDatabase.CreateAsset(settings, path);
+                AssetDatabase.Refresh();
+            }
+#endif
+
+            return settings;
         }
     }
 }

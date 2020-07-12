@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Reflection;
 
 namespace Popcron.Referencer
 {
@@ -12,15 +11,15 @@ namespace Popcron.Referencer
         public override List<Reference> LoadAll()
         {
             List<Reference> items = new List<Reference>();
-            List<string> paths = Loader.FindAssets("t:" + Type.Name);
+            List<string> paths = Loader.FindAssets($"t:{Type.Name}");
             List<string> processedPaths = new List<string>();
             foreach (string path in paths)
             {
-                if (processedPaths.Contains(path)) continue;
-
-                processedPaths.Add(path);
-
-                items.AddRange(Load(path));
+                if (!processedPaths.Contains(path))
+                {
+                    processedPaths.Add(path);
+                    items.AddRange(Load(path));
+                }
             }
 
             return items;
@@ -28,16 +27,13 @@ namespace Popcron.Referencer
 
         public override List<Reference> Load(string path)
         {
-            var scriptableObject = Loader.LoadAssetAtPath(path, Type);
-            if (!scriptableObject) return new List<Reference>();
-
-            long? id = Loader.GetIDFromScriptableObject(scriptableObject as ScriptableObject);
-
-            Reference item = new Reference(scriptableObject, scriptableObject.GetType(), path)
+            UnityEngine.Object scriptableObject = Loader.LoadAssetAtPath(path, Type);
+            if (!scriptableObject)
             {
-                ID = id
-            };
+                return new List<Reference>();
+            }
 
+            Reference item = new Reference(scriptableObject, scriptableObject.GetType(), path);
             return new List<Reference>() { item };
         }
     }

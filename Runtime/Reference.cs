@@ -18,11 +18,7 @@ public class Reference
     [SerializeField]
     private string typeName;
 
-    [SerializeField]
-    private long id;
-
     private Type cachedType;
-    private bool idIsNull = true;
 
     /// <summary>
     /// Reference to the asset itself.
@@ -137,26 +133,6 @@ public class Reference
     {
         get => path;
         set => path = value.Replace('\\', '/');
-    }
-
-    /// <summary>
-    /// ID of this asset based on the ID property or id field.
-    /// It will be null if this asset has no ID.
-    /// </summary>
-    public long? ID
-    {
-        get
-        {
-            return idIsNull ? null : (long?)id;
-        }
-        set
-        {
-            idIsNull = value == null;
-            if (value != null)
-            {
-                id = value.Value;
-            }
-        }
     }
 
     /// <summary>

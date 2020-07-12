@@ -85,7 +85,6 @@ namespace Popcron.Referencer
                     ignoreLines.Add(entry);
                     update = true;
                     Debug.Log("[Referencer] A .gitignore file was found. Added a new entry for the Referencer asset file.");
-
                     File.WriteAllLines(ignoreFilePath, ignoreLines.ToArray());
                 }
             }
@@ -100,7 +99,6 @@ namespace Popcron.Referencer
             {
                 update = true;
                 ResetInitializedScenes();
-                //Debug.Log("[Referencer] Loading all assets on startup");
             }
 
             //check against license file time
@@ -114,7 +112,6 @@ namespace Popcron.Referencer
                     //if editor log doesnt exist, then update
                     update = true;
                     ResetInitializedScenes();
-                    //Debug.Log("[Referencer] An Editor log was not found, gonna load all assets.");
                 }
                 else
                 {
@@ -134,7 +131,6 @@ namespace Popcron.Referencer
                         EditorPrefs.SetString(key, then.ToLongDateString());
                         update = true;
                         ResetInitializedScenes();
-                        //Debug.Log("[Referencer] Loading all assets on startup.");
                     }
                 }
             }
@@ -147,14 +143,12 @@ namespace Popcron.Referencer
                 {
                     update = true;
                     ResetInitializedScenes();
-                    //Debug.Log("[Referencer] No References asset file was found, creating new one.");
                 }
             }
 
             if (update)
             {
-                References references = Helper.LoadAll();
-                Helper.PutInsideContainer(references);
+                Helper.LoadAll();
             }
         }
 
@@ -165,10 +159,8 @@ namespace Popcron.Referencer
             {
                 if (!IsSceneInitialized(scene.name))
                 {
-                    References references = Helper.LoadAll();
-                    Helper.PutInsideContainer(references);
+                    Helper.LoadAll();
                     Debug.Log("[Referencer] Loaded all because were about to play the scene when its not initialized");
-
                     SetSceneInitialized(scene.name, true);
                 }
             }
@@ -178,10 +170,8 @@ namespace Popcron.Referencer
         {
             if (!IsSceneInitialized(newScene.name))
             {
-                References references = Helper.LoadAll();
-                Helper.PutInsideContainer(references);
+                Helper.LoadAll();
                 Debug.Log("[Referencer] Loaded all because we changed to a scene that isnt initialized");
-
                 SetSceneInitialized(newScene.name, true);
             }
         }
