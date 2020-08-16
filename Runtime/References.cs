@@ -499,7 +499,7 @@ namespace Popcron.Referencer
             //an error in the database was found, gon refresh now then
             if (errorFound)
             {
-                Relay.LoadAll(this);
+                Relay.LoadAll();
             }
         }
 

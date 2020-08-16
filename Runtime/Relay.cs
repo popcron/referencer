@@ -49,13 +49,13 @@ namespace Popcron.Referencer
         /// <summary>
         /// Calls upon Helper.LoadAll();
         /// </summary>
-        public static void LoadAll(References references)
+        public static void LoadAll()
         {
             Type helper = HelperType;
             if (helper != null)
             {
                 MethodInfo method = helper.GetMethod("LoadAll");
-                method.Invoke(null, new object[] { references });
+                method.Invoke(null, null);
             }
         }
 
