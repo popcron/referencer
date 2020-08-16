@@ -71,9 +71,9 @@ namespace Popcron.Referencer
             if (!exists)
             {
                 //ensure the resources folder exists
-                if (!Directory.Exists("Assets/Resources"))
+                if (!AssetDatabase.IsValidFolder("Assets/Resources"))
                 {
-                    Directory.CreateDirectory("Assets/Resources");
+                    AssetDatabase.CreateFolder("Assets", "Resources");
                 }
 
                 //make a file here

@@ -4,6 +4,10 @@ using System.Collections.ObjectModel;
 using System.IO;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 using Object = UnityEngine.Object;
 using Random = System.Random;
 
@@ -522,15 +526,15 @@ namespace Popcron.Referencer
             if (!exists)
             {
                 //ensure the resources folder exists
-                if (!Directory.Exists("Assets/Resources"))
+                if (!AssetDatabase.IsValidFolder("Assets/Resources"))
                 {
-                    Directory.CreateDirectory("Assets/Resources");
+                    AssetDatabase.CreateFolder("Assets", "Resources");
                 }
 
                 //make a file here
                 string path = "Assets/Resources/References.asset";
-                UnityEditor.AssetDatabase.CreateAsset(references, path);
-                UnityEditor.AssetDatabase.Refresh();
+                AssetDatabase.CreateAsset(references, path);
+                AssetDatabase.Refresh();
             }
 #endif
 
