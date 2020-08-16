@@ -201,17 +201,21 @@ namespace Popcron.Referencer
                     //search using contains without case sensitivity
                     for (int i = 0; i < references.Assets.Count; i++)
                     {
-                        if (references.Assets[i].Path.IndexOf(query, StringComparison.OrdinalIgnoreCase) != -1)
+                        Reference asset = references.Assets[i];
+                        if (asset.Object)
                         {
-                            list.Add(references.Assets[i]);
-                        }
-                        else if (references.Assets[i].Object.name.IndexOf(query, StringComparison.OrdinalIgnoreCase) != -1)
-                        {
-                            list.Add(references.Assets[i]);
-                        }
-                        else if (references.Assets[i].Type.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) != -1)
-                        {
-                            list.Add(references.Assets[i]);
+                            if (asset.Path.IndexOf(query, StringComparison.OrdinalIgnoreCase) != -1)
+                            {
+                                list.Add(asset);
+                            }
+                            else if (asset.Object.name.IndexOf(query, StringComparison.OrdinalIgnoreCase) != -1)
+                            {
+                                list.Add(asset);
+                            }
+                            else if (asset.Type.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) != -1)
+                            {
+                                list.Add(asset);
+                            }
                         }
                     }
                 }

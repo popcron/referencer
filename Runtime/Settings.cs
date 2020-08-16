@@ -1,6 +1,7 @@
 ﻿using System;
-using System.IO;
 using UnityEngine;
+using System.Reflection;
+using System.Collections.Generic;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -11,6 +12,7 @@ namespace Popcron.Referencer
     public class Settings : ScriptableObject
     {
         private static Settings current;
+        private static Dictionary<string, Type> nameToAssembly;
 
         //constants
         public const string SettingsAssetName = "Referencer Settings.asset";
@@ -50,6 +52,35 @@ namespace Popcron.Referencer
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Returns the type that this reference is of.
+        /// </summary>
+        public static Type GetType(string fullTypeName)
+        {
+            if (nameToAssembly == null)
+            {
+                Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                nameToAssembly = new Dictionary<string, Type>();
+                for (int a = 0; a < assemblies.Length; a++)
+                {
+                    Assembly assembly = assemblies[a];
+                    Type[] types = assembly.GetTypes();
+                    for (int t = 0; t < types.Length; t++)
+                    {
+                        Type type = types[t];
+                        nameToAssembly[type.FullName] = type;
+                    }
+                }
+            }
+
+            if (nameToAssembly.TryGetValue(fullTypeName, out Type resultType))
+            {
+                return resultType;
+            }
+
+            return null;
         }
 
         /// <summary>
