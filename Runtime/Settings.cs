@@ -2,6 +2,7 @@
 using UnityEngine;
 using System.Reflection;
 using System.Collections.Generic;
+using System.IO;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -89,13 +90,14 @@ namespace Popcron.Referencer
         public static Settings GetOrCreate()
         {
             //find from resources
-            Settings settings = Resources.Load<Settings>(SettingsAssetName);
+            string name = Path.GetFileNameWithoutExtension(SettingsAssetName);
+            Settings settings = Resources.Load<Settings>(name);
             bool exists = settings;
             if (!exists)
             {
                 //no console settings asset exists yet, so create one
                 settings = CreateInstance<Settings>();
-                settings.name = SettingsAssetName;
+                settings.name = name;
             }
 
 #if UNITY_EDITOR
