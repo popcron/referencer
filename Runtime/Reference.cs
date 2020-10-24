@@ -81,7 +81,7 @@ public class Reference
     {
         string key = "Assets/";
         int index = path.IndexOf(key, StringComparison.OrdinalIgnoreCase);
-        if (index != -1)
+        if (index == 0)
         {
             path = path.Substring(key.Length);
         }
