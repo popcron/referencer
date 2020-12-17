@@ -80,11 +80,6 @@ namespace Popcron.Referencer
             for (int i = 0; i < importedAssets.Length; i++)
             {
                 string path = importedAssets[i];
-                if (settings.IsBlacklisted(path))
-                {
-                    continue;
-                }
-
                 dirty |= Add(path, references);
             }
 
@@ -92,26 +87,12 @@ namespace Popcron.Referencer
             for (int i = 0; i < deletedAssets.Length; i++)
             {
                 string path = deletedAssets[i];
-                if (settings.IsBlacklisted(path))
-                {
-                    continue;
-                }
-
                 dirty |= Remove(path, references);
             }
 
             //delete and add
             for (int i = 0; i < movedAssets.Length; i++)
             {
-                if (settings.IsBlacklisted(movedFromAssetPaths[i]))
-                {
-                    continue;
-                }
-                else if (settings.IsBlacklisted(movedAssets[i]))
-                {
-                    continue;
-                }
-
                 dirty |= Move(movedFromAssetPaths[i], movedAssets[i], references);
             }
 

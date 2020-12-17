@@ -9,18 +9,13 @@ namespace Popcron.Referencer
     {
         public override Type Type => typeof(Sprite);
 
-        public override List<Reference> LoadAll()
+        public override List<Reference> LoadAll(Settings settings)
         {
             List<Reference> items = new List<Reference>();
-            List<string> paths = Loader.FindAssets("t:" + Type.Name);
-            List<string> processedPaths = new List<string>();
-            foreach (string path in paths)
+            string[] paths = Loader.FindAssets($"t:{Type.Name}");
+            for (int i = 0; i < paths.Length; i++)
             {
-                if (processedPaths.Contains(path)) continue;
-
-                processedPaths.Add(path);
-
-                items.AddRange(Load(path));
+                items.AddRange(Load(paths[i]));
             }
 
             return items;
@@ -30,7 +25,7 @@ namespace Popcron.Referencer
         {
             string pathFileName = Path.GetFileNameWithoutExtension(path);
             List<Reference> items = new List<Reference>();
-            var sprites = Loader.LoadAllAssetsAtPath(path);
+            UnityEngine.Object[] sprites = Loader.LoadAllAssetsAtPath(path);
             if (sprites.Length == 2)
             {
                 if (sprites[0] is Sprite)
@@ -46,10 +41,13 @@ namespace Popcron.Referencer
             }
             else
             {
-                foreach (var sprite in sprites)
+                foreach (UnityEngine.Object sprite in sprites)
                 {
                     //dont load the main asset itself if theres more than 1 sprite, its not a sprite
-                    if (sprite.name == pathFileName) continue;
+                    if (sprite.name == pathFileName)
+                    {
+                        continue;
+                    }
 
                     Reference item = new Reference(sprite, Type, path + "/" + sprite.name);
                     items.Add(item);

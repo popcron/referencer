@@ -364,6 +364,13 @@ namespace Popcron.Referencer
                 return false;
             }
 
+            //check if this item belongs to a path that should be ignored
+            Settings settings = Settings.Current;
+            if (settings.IsBlacklisted(item.Path))
+            {
+                return false;
+            }
+
             //item has no object asset assigned
             //so dont add it
             Object unityObject = item.Object;

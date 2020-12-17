@@ -12,9 +12,10 @@ namespace Popcron.Referencer
         public static List<T> FindAssetsByType<T>() where T : Object
         {
             List<T> assets = new List<T>();
-            List<string> paths = Relay.FindAssets<T>();
-            foreach (string path in paths)
+            string[] paths = Relay.FindAssets<T>();
+            for (int i = 0; i < paths.Length; i++)
             {
+                string path = paths[i];
                 T asset = Relay.LoadAssetAtPath<T>(path);
                 if (asset != null)
                 {
@@ -44,18 +45,13 @@ namespace Popcron.Referencer
         /// <summary>
         /// Returns paths to all assets that match this filter using AssetDatabase.
         /// </summary>
-        public static List<string> FindAssets(string filter)
+        public static string[] FindAssets(string filter)
         {
-            Settings settings = Settings.Current;
-            List<string> paths = new List<string>();
-            List<string> assets = Relay.FindAssets(filter);
-            for (int i = 0; i < assets.Count; i++)
+            string[] paths = Relay.FindAssets(filter);
+            for (int i = 0; i < paths.Length; i++)
             {
-                string path = assets[i].Replace("Assets/", "");
-                if (!settings.IsBlacklisted(path))
-                {
-                    paths.Add(path);
-                }
+                ref string path = ref paths[i];
+                path = path.Replace("Assets/", "");
             }
 
             return paths;

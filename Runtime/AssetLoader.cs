@@ -1,99 +1,81 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Popcron.Referencer
 {
     public abstract class AssetLoader
     {
+        private static List<AssetLoader> allLoaders = null;
         private static Dictionary<Type, AssetLoader> typeToLoader = null;
 
         public abstract Type Type { get; }
-        public abstract List<Reference> LoadAll();
+        public abstract List<Reference> LoadAll(Settings settings);
         public abstract List<Reference> Load(string path);
 
+        /// <summary>
+        /// List of all available loaders.
+        /// </summary>
         public static List<AssetLoader> Loaders
         {
             get
             {
-                RefreshCache(true);
-                List<AssetLoader> loaders = new List<AssetLoader>();
-
-                for (int i = 0; i < typeToLoader.Count; i++)
+                if (allLoaders == null)
                 {
-                    loaders.Add(typeToLoader.ElementAt(i).Value);
-                }
-
-                return loaders;
-            }
-        }
-
-        public static void RefreshCache(bool force)
-        {
-            if (typeToLoader == null || force)
-            {
-                typeToLoader = new Dictionary<Type, AssetLoader>();
-
-                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (var assembly in assemblies)
-                {
-                    var types = assembly.GetTypes();
-                    foreach (var type in types)
+                    allLoaders = new List<AssetLoader>();
+                    foreach (KeyValuePair<string, Type> element in Settings.NameToType)
                     {
-                        if (type.IsAbstract) continue;
-                        if (type.IsSubclassOf(typeof(AssetLoader)))
+                        Type type = element.Value;
+                        if (!type.IsAbstract && typeof(AssetLoader).IsAssignableFrom(type))
                         {
-                            AssetLoader assetLoader = (AssetLoader)Activator.CreateInstance(type);
-                            typeToLoader.Add(assetLoader.Type, assetLoader);
+                            AssetLoader newLoader = (AssetLoader)Activator.CreateInstance(type);
+                            allLoaders.Add(newLoader);
                         }
                     }
                 }
+
+                return allLoaders;
             }
         }
 
+        /// <summary>
+        /// Returns the loader for this type.
+        /// </summary>
         public static AssetLoader Get(Type type)
         {
-            RefreshCache(false);
-
             if (type == null)
             {
-                return null;    
+                return null;
             }
-            
+
             if (type.IsSubclassOf(typeof(ScriptableObject)))
             {
                 type = typeof(ScriptableObject);
             }
 
-            if (typeToLoader.TryGetValue(type, out AssetLoader loader))
+            //make sure the dictionary cache exists
+            if (typeToLoader == null)
             {
-                return loader;
+                typeToLoader = new Dictionary<Type, AssetLoader>();
+                List<AssetLoader> all = Loaders;
+                for (int i = 0; i < all.Count; i++)
+                {
+                    AssetLoader loader = all[i];
+                    typeToLoader[loader.Type] = loader;
+                }
             }
-            else
+
+            if (typeToLoader.TryGetValue(type, out AssetLoader foundLoader))
             {
-                return null;
+                return foundLoader;
             }
+
+            return null;
         }
 
-        public static AssetLoader Get<T>()
-        {
-            RefreshCache(false);
-
-            Type type = typeof(T);
-            if (type.IsSubclassOf(typeof(ScriptableObject)))
-            {
-                type = typeof(ScriptableObject);
-            }
-
-            if (typeToLoader.TryGetValue(type, out AssetLoader loader))
-            {
-                return loader;
-            }
-            else
-            {
-                return null;
-            }
-        }
+        /// <summary>
+        /// Returns the loader for this type.
+        /// </summary>
+        public static AssetLoader Get<T>() => Get(typeof(T));
     }
 }

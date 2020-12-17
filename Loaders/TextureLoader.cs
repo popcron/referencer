@@ -8,18 +8,13 @@ namespace Popcron.Referencer
     {
         public override Type Type => typeof(Texture);
 
-        public override List<Reference> LoadAll()
+        public override List<Reference> LoadAll(Settings settings)
         {
             List<Reference> items = new List<Reference>();
-            List<string> paths = Loader.FindAssets("t:" + Type.Name);
-            List<string> processedPaths = new List<string>();
-            foreach (string path in paths)
+            string[] paths = Loader.FindAssets($"t:{Type.Name}");
+            for (int i = 0; i < paths.Length; i++)
             {
-                if (processedPaths.Contains(path)) continue;
-
-                processedPaths.Add(path);
-
-                items.AddRange(Load(path));
+                items.AddRange(Load(paths[i]));
             }
 
             return items;
@@ -27,7 +22,7 @@ namespace Popcron.Referencer
 
         public override List<Reference> Load(string path)
         {
-            var prefab = Loader.LoadAssetAtPath(path, Type);
+            UnityEngine.Object prefab = Loader.LoadAssetAtPath(path, Type);
             Reference item = new Reference(prefab, Type, path);
             return new List<Reference>() { item };
         }

@@ -1,6 +1,5 @@
 ﻿using Popcron.Referencer;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -16,7 +15,8 @@ public class Reference
     [SerializeField]
     private string typeName;
 
-    private Type cachedType;
+    [NonSerialized]
+    private Type systemType;
 
     /// <summary>
     /// Reference to the asset itself.
@@ -33,16 +33,16 @@ public class Reference
             //null type name is null cached type
             if (string.IsNullOrEmpty(typeName))
             {
-                cachedType = null;
+                systemType = null;
                 return null;
             }
 
-            if (cachedType == null)
+            if (systemType == null)
             {
-                cachedType = Settings.GetType(typeName);
+                systemType = Settings.GetType(typeName);
             }
 
-            return cachedType;
+            return systemType;
         }
     }
 
@@ -79,16 +79,9 @@ public class Reference
 
     public Reference(Object unityObject, Type type, string path)
     {
-        string key = "Assets/";
-        int index = path.IndexOf(key, StringComparison.OrdinalIgnoreCase);
-        if (index == 0)
-        {
-            path = path.Substring(key.Length);
-        }
-
         this.path = path;
         this.unityObject = unityObject;
         this.typeName = type.FullName;
-        this.cachedType = type;
+        this.systemType = type;
     }
 }

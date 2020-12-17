@@ -13,7 +13,31 @@ namespace Popcron.Referencer
     public class Settings : ScriptableObject
     {
         private static Settings current;
-        private static Dictionary<string, Type> nameToAssembly;
+        private static Dictionary<string, Type> nameToType;
+
+        public static Dictionary<string, Type> NameToType
+        {
+            get
+            {
+                if (nameToType == null)
+                {
+                    Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                    nameToType = new Dictionary<string, Type>();
+                    for (int a = 0; a < assemblies.Length; a++)
+                    {
+                        Assembly assembly = assemblies[a];
+                        Type[] types = assembly.GetTypes();
+                        for (int t = 0; t < types.Length; t++)
+                        {
+                            Type type = types[t];
+                            nameToType[type.FullName] = type;
+                        }
+                    }
+                }
+
+                return nameToType;
+            }
+        }
 
         //constants
         public const string SettingsAssetName = "Referencer Settings.asset";
@@ -60,23 +84,7 @@ namespace Popcron.Referencer
         /// </summary>
         public static Type GetType(string fullTypeName)
         {
-            if (nameToAssembly == null)
-            {
-                Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                nameToAssembly = new Dictionary<string, Type>();
-                for (int a = 0; a < assemblies.Length; a++)
-                {
-                    Assembly assembly = assemblies[a];
-                    Type[] types = assembly.GetTypes();
-                    for (int t = 0; t < types.Length; t++)
-                    {
-                        Type type = types[t];
-                        nameToAssembly[type.FullName] = type;
-                    }
-                }
-            }
-
-            if (nameToAssembly.TryGetValue(fullTypeName, out Type resultType))
+            if (NameToType.TryGetValue(fullTypeName, out Type resultType))
             {
                 return resultType;
             }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Reflection;
 using Object = UnityEngine.Object;
 
@@ -11,6 +10,10 @@ namespace Popcron.Referencer
     public class Relay
     {
         private static Type helperType = null;
+        private static MethodInfo loadAllMethod = null;
+        private static MethodInfo findAssetsMethod = null;
+        private static MethodInfo loadAssetAtPathMethod = null;
+        private static MethodInfo loadAllAssetsAtPathMethod = null;
 
         private static Type HelperType
         {
@@ -54,33 +57,38 @@ namespace Popcron.Referencer
             Type helper = HelperType;
             if (helper != null)
             {
-                MethodInfo method = helper.GetMethod("LoadAll");
-                method.Invoke(null, null);
+                if (loadAllMethod == null)
+                {
+                    loadAllMethod = helper.GetMethod("LoadAll");
+                }
+
+                loadAllMethod.Invoke(null, null);
             }
         }
 
         /// <summary>
         /// Returns asset paths of this type.
         /// </summary>
-        internal static List<string> FindAssets<T>() where T : class
-        {
-            return FindAssets($"t:{typeof(T)}");
-        }
+        internal static string[] FindAssets<T>() where T : class => FindAssets($"t:{typeof(T)}");
 
         /// <summary>
         /// Returns asset paths with this filter as a search query.
         /// </summary>
-        internal static List<string> FindAssets(string filter)
+        internal static string[] FindAssets(string filter)
         {
             Type helper = HelperType;
             if (helper != null)
             {
-                MethodInfo method = helper.GetMethod("FindAssets");
-                return method.Invoke(null, new object[] { filter }) as List<string>;
+                if (findAssetsMethod == null)
+                {
+                    findAssetsMethod = helper.GetMethod("FindAssets");
+                }
+
+                return (string[])findAssetsMethod.Invoke(null, new object[] { filter });
             }
             else
             {
-                return new List<string>();
+                return new string[] { };
             }
         }
 
@@ -100,8 +108,12 @@ namespace Popcron.Referencer
             Type helper = HelperType;
             if (helper != null)
             {
-                MethodInfo method = helper.GetMethod("LoadAssetAtPath");
-                return method.Invoke(null, new object[] { path, type }) as Object;
+                if (loadAssetAtPathMethod == null)
+                {
+                    loadAssetAtPathMethod = helper.GetMethod("LoadAssetAtPath");
+                }
+
+                return (Object)loadAssetAtPathMethod.Invoke(null, new object[] { path, type });
             }
             else
             {
@@ -117,8 +129,12 @@ namespace Popcron.Referencer
             Type helper = HelperType;
             if (helper != null)
             {
-                MethodInfo method = helper.GetMethod("LoadAllAssetsAtPath");
-                return method.Invoke(null, new object[] { path }) as Object[];
+                if (loadAllAssetsAtPathMethod == null)
+                {
+                    loadAllAssetsAtPathMethod = helper.GetMethod("LoadAllAssetsAtPath");
+                }
+
+                return (Object[])loadAllAssetsAtPathMethod.Invoke(null, new object[] { path });
             }
             else
             {

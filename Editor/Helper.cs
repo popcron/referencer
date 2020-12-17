@@ -32,26 +32,14 @@ namespace Popcron.Referencer
             references.Clear();
 
             //then loop though all loaders and load the assets of their types
-            int loadedItems = 0;
             for (int l = 0; l < loaders.Count; l++)
             {
                 AssetLoader loader = loaders[l];
-                List<Reference> items = loader.LoadAll();
+                List<Reference> items = loader.LoadAll(settings);
                 for (int i = 0; i < items.Count; i++)
                 {
                     Reference item = items[i];
-
-                    //check against settings
-                    if (Settings.Current.IsBlacklisted(item.Path))
-                    {
-                        continue;
-                    }
-
-                    bool added = references.Add(item);
-                    if (added)
-                    {
-                        loadedItems++;
-                    }
+                    references.Add(item);
                 }
             }
 
@@ -59,13 +47,14 @@ namespace Popcron.Referencer
         }
 
         //reflected by Relay
-        public static List<string> FindAssets(string filter)
+        public static string[] FindAssets(string filter)
         {
-            List<string> paths = new List<string>();
             string[] guids = AssetDatabase.FindAssets(filter);
-            foreach (string guid in guids)
+            string[] paths = new string[guids.Length];
+            for (int i = 0; i < guids.Length; i++)
             {
-                paths.Add(AssetDatabase.GUIDToAssetPath(guid));
+                string guid = guids[i];
+                paths[i] = AssetDatabase.GUIDToAssetPath(guid);
             }
 
             return paths;
