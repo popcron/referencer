@@ -19,7 +19,7 @@ namespace Popcron.Referencer
         {
             get
             {
-                if (nameToType == null)
+                if (nameToType is null)
                 {
                     Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
                     nameToType = new Dictionary<string, Type>();
@@ -62,6 +62,14 @@ namespace Popcron.Referencer
 
         [SerializeField]
         private string[] blacklistFilter = { "Resources/", "Game/", ".html" };
+
+#if UNITY_EDITOR
+        [UnityEditor.Callbacks.DidReloadScripts]
+#endif
+        private static void Initialize()
+        {
+            _ = NameToType;
+        }
 
         /// <summary>
         /// Returns true if this path has overlap with the blacklist filter.

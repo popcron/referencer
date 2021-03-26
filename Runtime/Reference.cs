@@ -1,87 +1,89 @@
-﻿using Popcron.Referencer;
-using System;
+﻿using System;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-[Serializable]
-public class Reference
+namespace Popcron.Referencer
 {
-    [SerializeField]
-    private string path;
-
-    [SerializeField]
-    private Object unityObject;
-
-    [SerializeField]
-    private string typeName;
-
-    [NonSerialized]
-    private Type systemType;
-
-    /// <summary>
-    /// Reference to the asset itself.
-    /// </summary>
-    public Object Object => unityObject;
-
-    /// <summary>
-    /// The type of this referenced asset.
-    /// </summary>
-    public Type Type
+    [Serializable]
+    public class Reference
     {
-        get
+        [SerializeField]
+        private string path;
+
+        [SerializeField]
+        private Object unityObject;
+
+        [SerializeField]
+        private string typeName;
+
+        [NonSerialized]
+        private Type systemType;
+
+        /// <summary>
+        /// Reference to the asset itself.
+        /// </summary>
+        public Object Object => unityObject;
+
+        /// <summary>
+        /// The type of this referenced asset.
+        /// </summary>
+        public Type Type
         {
-            //null type name is null cached type
-            if (string.IsNullOrEmpty(typeName))
+            get
             {
-                systemType = null;
-                return null;
-            }
+                //null type name is null cached type
+                if (string.IsNullOrEmpty(typeName))
+                {
+                    systemType = null;
+                    return null;
+                }
 
-            if (systemType == null)
-            {
-                systemType = Settings.GetType(typeName);
-            }
+                if (systemType == null)
+                {
+                    systemType = Settings.GetType(typeName);
+                }
 
-            return systemType;
+                return systemType;
+            }
         }
-    }
 
-    /// <summary>
-    /// Path to the asset.
-    /// </summary>
-    public string Path
-    {
-        get => path;
-        set => path = value.Replace('\\', '/');
-    }
-
-    /// <summary>
-    /// Updates the asset that this reference is pointing to.
-    /// </summary>
-    public void SetObject(Object unityObject)
-    {
-        if (unityObject)
+        /// <summary>
+        /// Path to the asset.
+        /// </summary>
+        public string Path
         {
-            if (Type == unityObject.GetType())
+            get => path;
+            set => path = value.Replace('\\', '/');
+        }
+
+        /// <summary>
+        /// Updates the asset that this reference is pointing to.
+        /// </summary>
+        public void SetObject(Object unityObject)
+        {
+            if (unityObject)
             {
-                this.unityObject = unityObject;
+                if (Type == unityObject.GetType())
+                {
+                    this.unityObject = unityObject;
+                }
+                else
+                {
+                    Debug.LogError($"{unityObject} is not an asset of type {Type}");
+                }
             }
             else
             {
-                Debug.LogError($"{unityObject} is not an asset of type {Type}");
+                Debug.LogError($"Tried to assign reference at path {path} a null object");
             }
         }
-        else
-        {
-            Debug.LogError($"Tried to assign reference at path {path} a null object");
-        }
-    }
 
-    public Reference(Object unityObject, Type type, string path)
-    {
-        this.path = path;
-        this.unityObject = unityObject;
-        this.typeName = type.FullName;
-        this.systemType = type;
+        public Reference(Object unityObject, Type type, string path)
+        {
+            this.path = path;
+            this.unityObject = unityObject;
+            this.typeName = type.FullName;
+            this.systemType = type;
+        }
     }
 }

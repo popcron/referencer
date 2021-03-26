@@ -81,7 +81,6 @@ namespace Popcron.Referencer
             }
 
             EditorUtility.SetDirty(obj);
-            AssetDatabase.SaveAssets();
         }
     }
 }

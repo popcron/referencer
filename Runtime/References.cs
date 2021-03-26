@@ -43,7 +43,7 @@ namespace Popcron.Referencer
         {
             get
             {
-                if (assetsReadOnly == null)
+                if (assetsReadOnly is null)
                 {
                     assetsReadOnly = assets.AsReadOnly();
                 }
@@ -60,13 +60,17 @@ namespace Popcron.Referencer
             path = path.Replace('\\', '/');
             for (int i = 0; i < assets.Count; i++)
             {
-                if (assets[i].Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+                Reference reference = assets[i];
+                if (reference.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
                     assets.RemoveAt(i);
                     assetsReadOnly = assets.AsReadOnly();
 
-                    //have to recreate the objectToPath dict
-                    EnsureCacheExists(true);
+                    if (objectToPath != null)
+                    {
+                        objectToPath.Remove(reference.Object);
+                    }
+
                     return true;
                 }
             }
@@ -188,7 +192,7 @@ namespace Popcron.Referencer
             }
 
             //ensure randomness exists
-            if (random == null)
+            if (random is null)
             {
                 random = new Random();
             }
@@ -293,12 +297,27 @@ namespace Popcron.Referencer
         /// </summary>
         public List<Object> GetAll(Type type)
         {
+            bool isComponent = typeof(Component).IsAssignableFrom(type);
             List<Object> result = new List<Object>();
             for (int i = 0; i < assets.Count; i++)
             {
-                if (assets[i].Type == type || type.IsAssignableFrom(assets[i].Type))
+                if (isComponent)
                 {
-                    result.Add(assets[i].Object);
+                    if (assets[i].Object is GameObject prefab)
+                    {
+                        Object component = prefab.GetComponent(type);
+                        if (component)
+                        {
+                            result.Add(component);
+                        }
+                    }
+                }
+                else
+                {
+                    if (assets[i].Type == type || type.IsAssignableFrom(assets[i].Type))
+                    {
+                        result.Add(assets[i].Object);
+                    }
                 }
             }
 
@@ -310,13 +329,28 @@ namespace Popcron.Referencer
         /// </summary>
         public List<T> GetAll<T>() where T : Object
         {
+            bool isComponent = typeof(Component).IsAssignableFrom(typeof(T));
             Type type = typeof(T);
             List<T> result = new List<T>();
             for (int i = 0; i < assets.Count; i++)
             {
-                if (assets[i].Type == type || type.IsAssignableFrom(assets[i].Type))
+                if (isComponent)
                 {
-                    result.Add(assets[i].Object as T);
+                    if (assets[i].Object is GameObject prefab)
+                    {
+                        T component = prefab.GetComponent<T>();
+                        if (component)
+                        {
+                            result.Add(component);
+                        }
+                    }
+                }
+                else
+                {
+                    if (assets[i].Type == type || type.IsAssignableFrom(assets[i].Type))
+                    {
+                        result.Add(assets[i].Object as T);
+                    }
                 }
             }
 
@@ -379,17 +413,17 @@ namespace Popcron.Referencer
                 return false;
             }
 
-            if (pathToItem == null)
+            if (pathToItem is null)
             {
                 pathToItem = new Dictionary<string, Reference>();
             }
 
-            if (nameToItem == null)
+            if (nameToItem is null)
             {
                 nameToItem = new Dictionary<string, Reference>();
             }
 
-            if (objectToPath == null)
+            if (objectToPath is null)
             {
                 objectToPath = new Dictionary<Object, string>();
             }
@@ -413,20 +447,21 @@ namespace Popcron.Referencer
         internal void EnsureCacheExists(bool forceRecreate = false)
         {
             bool errorFound = false;
-            if (pathToItem == null || forceRecreate)
+            if (pathToItem is null || forceRecreate)
             {
                 pathToItem = new Dictionary<string, Reference>();
 
                 //built in
                 for (int i = 0; i < assets.Count; i++)
                 {
-                    if (assets[i] == null)
+                    Reference reference = assets[i];
+                    if (reference is null)
                     {
                         errorFound = true;
                         continue;
                     }
 
-                    string key = assets[i].Path.Replace('\\', '/');
+                    string key = reference.Path.Replace('\\', '/');
                     if (!string.IsNullOrEmpty(key))
                     {
                         if (pathToItem.ContainsKey(key))
@@ -434,36 +469,37 @@ namespace Popcron.Referencer
                             continue;
                         }
 
-                        pathToItem.Add(key, assets[i]);
+                        pathToItem.Add(key, reference);
                     }
                     else
                     {
-                        Debug.LogWarning($"[Referencer] {assets[i]?.Object?.name} has no path, so not adding to reference db");
+                        Debug.LogWarning($"[Referencer] {reference?.Object?.name} has no path, so not adding to reference db");
                     }
                 }
             }
 
-            if (nameToItem == null || forceRecreate)
+            if (nameToItem is null || forceRecreate)
             {
                 nameToItem = new Dictionary<string, Reference>();
 
                 //built in
                 for (int i = 0; i < assets.Count; i++)
                 {
-                    if (assets[i] == null)
+                    Reference reference = assets[i];
+                    if (reference is null)
                     {
                         errorFound = true;
                         continue;
                     }
 
-                    Type type = assets[i].Type;
-                    if (type == null)
+                    Type type = reference.Type;
+                    if (type is null)
                     {
                         errorFound = true;
                         continue;
                     }
 
-                    string key = $"{type.FullName}:{Path.GetFileNameWithoutExtension(assets[i].Path)}";
+                    string key = $"{type.FullName}:{Path.GetFileNameWithoutExtension(reference.Path)}";
                     if (!string.IsNullOrEmpty(key))
                     {
                         if (nameToItem.ContainsKey(key))
@@ -475,25 +511,26 @@ namespace Popcron.Referencer
                     }
                     else
                     {
-                        Debug.LogWarning($"[Referencer] {assets[i]?.Object?.name} has no path, so not adding to reference db");
+                        Debug.LogWarning($"[Referencer] {reference?.Object?.name} has no path, so not adding to reference db");
                     }
                 }
             }
 
-            if (objectToPath == null || forceRecreate)
+            if (objectToPath is null || forceRecreate)
             {
                 objectToPath = new Dictionary<Object, string>();
 
                 //built in
                 for (int i = 0; i < assets.Count; i++)
                 {
-                    if (assets[i] == null)
+                    Reference reference = assets[i];
+                    if (reference is null)
                     {
                         errorFound = true;
                         continue;
                     }
 
-                    Object key = assets[i].Object;
+                    Object key = reference.Object;
                     if (key)
                     {
                         if (objectToPath.ContainsKey(key))
@@ -501,7 +538,7 @@ namespace Popcron.Referencer
                             continue;
                         }
 
-                        string value = assets[i].Path.Replace('\\', '/');
+                        string value = reference.Path.Replace('\\', '/');
                         objectToPath.Add(key, value);
                     }
                 }

@@ -20,7 +20,7 @@ namespace Popcron.Referencer
         {
             get
             {
-                if (allLoaders == null)
+                if (allLoaders is null)
                 {
                     allLoaders = new List<AssetLoader>();
                     foreach (KeyValuePair<string, Type> element in Settings.NameToType)
@@ -43,7 +43,7 @@ namespace Popcron.Referencer
         /// </summary>
         public static AssetLoader Get(Type type)
         {
-            if (type == null)
+            if (type is null)
             {
                 return null;
             }
@@ -54,7 +54,7 @@ namespace Popcron.Referencer
             }
 
             //make sure the dictionary cache exists
-            if (typeToLoader == null)
+            if (typeToLoader is null)
             {
                 typeToLoader = new Dictionary<Type, AssetLoader>();
                 List<AssetLoader> all = Loaders;
@@ -77,5 +77,13 @@ namespace Popcron.Referencer
         /// Returns the loader for this type.
         /// </summary>
         public static AssetLoader Get<T>() => Get(typeof(T));
+
+#if UNITY_EDITOR
+        [UnityEditor.Callbacks.DidReloadScripts]
+        private static void Initialize()
+        {
+            _ = Loaders;
+        }
+#endif
     }
 }

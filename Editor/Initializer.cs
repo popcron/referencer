@@ -157,7 +157,7 @@ namespace Popcron.Referencer
             Scene scene = SceneManager.GetActiveScene();
             if (state == PlayModeStateChange.ExitingEditMode)
             {
-                if (!IsSceneInitialized(scene.name))
+                if (!IsSceneInitialized(scene.path))
                 {
                     Helper.LoadAll();
                     Debug.Log("[Referencer] Loaded all because were about to play the scene when its not initialized");
@@ -168,10 +168,10 @@ namespace Popcron.Referencer
 
         private static void OnChangedScene(Scene oldScene, Scene newScene)
         {
-            if (!IsSceneInitialized(newScene.name))
+            if (!IsSceneInitialized(newScene.path))
             {
                 Helper.LoadAll();
-                Debug.Log("[Referencer] Loaded all because we changed to a scene that isnt initialized");
+                //Debug.Log("[Referencer] Loaded all because we changed to a scene that isnt initialized");
                 SetSceneInitialized(newScene.name, true);
             }
         }
