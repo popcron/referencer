@@ -34,6 +34,9 @@ namespace Popcron.Referencer
             //then loop though all loaders and load the assets of their types
             for (int l = 0; l < loaders.Count; l++)
             {
+                float progress = Mathf.Clamp01(l / (float)loaders.Count);
+                EditorUtility.DisplayProgressBar("Referencer", "Loading all references", progress);
+
                 AssetLoader loader = loaders[l];
                 List<Reference> items = loader.LoadAll(settings);
                 for (int i = 0; i < items.Count; i++)
@@ -43,6 +46,7 @@ namespace Popcron.Referencer
                 }
             }
 
+            EditorUtility.ClearProgressBar();
             SetDirty(references);
         }
 

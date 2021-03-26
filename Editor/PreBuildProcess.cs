@@ -1,6 +1,7 @@
 ﻿using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
+using UnityEngine;
 
 namespace Popcron.Referencer
 {
@@ -14,6 +15,7 @@ namespace Popcron.Referencer
         void IPreprocessBuildWithReport.OnPreprocessBuild(BuildReport report)
         {
             Helper.LoadAll();
+            Debug.Log("[Referencer] Loaded all because project is being built");
             AssetDatabase.SaveAssets();
         }
     }

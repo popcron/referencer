@@ -20,6 +20,11 @@ public struct Refs
     public static ReadOnlyCollection<Reference> Assets => Instance.Assets;
 
     /// <summary>
+    /// Returns the first asset of this type.
+    /// </summary>
+    public static T Get<T>() where T : Object => Instance.Get<T>();
+
+    /// <summary>
     /// Returns an asset with this type and name.
     /// </summary>
     public static T Get<T>(string name) where T : Object => Instance.Get<T>(name);

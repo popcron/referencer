@@ -12,7 +12,6 @@ namespace Popcron.Referencer
     public static class ReferencesLoader
     {
         private static FileSystemWatcher fileSystemWatcher;
-        private static bool loadQueued;
         private static string projectFolder;
         private static Stack<FileSystemEventArgs> fileSystemEvent = new Stack<FileSystemEventArgs>();
 
@@ -93,7 +92,7 @@ namespace Popcron.Referencer
             return e.FullPath.IndexOf(".meta", StringComparison.OrdinalIgnoreCase) != -1;
         }
 
-        [MenuItem("Popcron/Referencer/Load all")]
+        [MenuItem("Popcron/Referencer/Load all %#_x")]
         public static void LoadAll()
         {
             Helper.LoadAll();

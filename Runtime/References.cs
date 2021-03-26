@@ -88,9 +88,10 @@ namespace Popcron.Referencer
             //first check built in data
             for (int i = 0; i < assets.Count; i++)
             {
-                if (assets[i].Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+                Reference reference = assets[i];
+                if (reference.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
-                    return assets[i];
+                    return reference;
                 }
             }
 
@@ -117,11 +118,13 @@ namespace Popcron.Referencer
             }
 
             path = path.Replace('\\', '/');
-            for (int i = 0; i < assets.Count; i++)
+            int count = assets.Count;
+            for (int i = 0; i < count; i++)
             {
-                if (assets[i].Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+                Reference reference = assets[i];
+                if (reference.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (assets[i].Object == asset)
+                    if (reference.Object == asset)
                     {
                         return true;
                     }
@@ -142,9 +145,11 @@ namespace Popcron.Referencer
             }
 
             path = path.Replace('\\', '/');
-            for (int i = 0; i < assets.Count; i++)
+            int count = assets.Count;
+            for (int i = 0; i < count; i++)
             {
-                if (assets[i].Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+                Reference reference = assets[i];
+                if (reference.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
                 {
                     return true;
                 }
@@ -163,9 +168,11 @@ namespace Popcron.Referencer
                 return false;
             }
 
-            for (int i = 0; i < assets.Count; i++)
+            int count = assets.Count;
+            for (int i = 0; i < count; i++)
             {
-                if (assets[i].Object == asset)
+                Reference reference = assets[i];
+                if (reference.Object == asset)
                 {
                     return true;
                 }
@@ -235,6 +242,7 @@ namespace Popcron.Referencer
             }
 
             EnsureCacheExists();
+            bool isComponent = typeof(Component).IsAssignableFrom(type);
 
             //name cotains a / or a \\ so check in path dictionary
             if (name.IndexOf('/') != -1 || name.IndexOf('\\') != -1)
@@ -248,6 +256,17 @@ namespace Popcron.Referencer
                         {
                             return item.Object;
                         }
+                        else if (isComponent)
+                        {
+                            if (item.Object is GameObject prefab)
+                            {
+                                Object component = prefab.GetComponent(type);
+                                if (component)
+                                {
+                                    return component;
+                                }
+                            }   
+                        }
                     }
                 }
             }
@@ -255,31 +274,65 @@ namespace Popcron.Referencer
             //check by name now
             if (nameToItem != null)
             {
-                string key = $"{type.FullName}:{name}";
+                string key;
+                if (isComponent)
+                {
+                    key = $"UnityEngine.GameObject:{name}";
+                }
+                else
+                {
+                    key = $"{type.FullName}:{name}";
+                }
+
                 if (nameToItem.TryGetValue(key, out Reference item))
                 {
-                    if (item.Type == type)
+                    if (isComponent)
+                    {
+                        if (item.Object is GameObject prefab)
+                        {
+                            Object component = prefab.GetComponent(type);
+                            if (component)
+                            {
+                                return component;
+                            }
+                        }   
+                    }
+                    else if (item.Type == type)
                     {
                         return item.Object;
                     }
                 }
             }
 
-            //last resort
-            List<Reference> items = assets;
-            for (int i = 0; i < items.Count; i++)
-            {
-                Reference item = items[i];
-                if (item.Type == type)
-                {
-                    if (string.IsNullOrEmpty(item.Path))
-                    {
-                        continue;
-                    }
+            return null;
+        }
 
-                    if (item.Path.Equals(name, StringComparison.OrdinalIgnoreCase))
+        /// <summary>
+        /// Returns the first asset of this type.
+        /// </summary>
+        public Object Get(Type type)
+        {
+            bool isComponent = typeof(Component).IsAssignableFrom(type);
+            int count = assets.Count;
+            for (int i = 0; i < count; i++)
+            {
+                Reference reference = assets[i];
+                if (isComponent)
+                {
+                    if (reference.Object is GameObject prefab)
                     {
-                        return item.Object;
+                        Object component = prefab.GetComponent(type);
+                        if (component)
+                        {
+                            return component;
+                        }
+                    }
+                }
+                else
+                {
+                    if (reference.Type == type || type.IsAssignableFrom(reference.Type))
+                    {
+                        return reference.Object;
                     }
                 }
             }
@@ -293,17 +346,24 @@ namespace Popcron.Referencer
         public T Get<T>(string name) where T : Object => Get(typeof(T), name) as T;
 
         /// <summary>
+        /// Returns the first asset of this type.
+        /// </summary>
+        public T Get<T>() where T : Object => Get(typeof(T)) as T;
+
+        /// <summary>
         /// Returns all objecst of a type.
         /// </summary>
         public List<Object> GetAll(Type type)
         {
             bool isComponent = typeof(Component).IsAssignableFrom(type);
             List<Object> result = new List<Object>();
-            for (int i = 0; i < assets.Count; i++)
+            int count = assets.Count;
+            for (int i = 0; i < count; i++)
             {
+                Reference reference = assets[i];
                 if (isComponent)
                 {
-                    if (assets[i].Object is GameObject prefab)
+                    if (reference.Object is GameObject prefab)
                     {
                         Object component = prefab.GetComponent(type);
                         if (component)
@@ -314,9 +374,9 @@ namespace Popcron.Referencer
                 }
                 else
                 {
-                    if (assets[i].Type == type || type.IsAssignableFrom(assets[i].Type))
+                    if (reference.Type == type || type.IsAssignableFrom(reference.Type))
                     {
-                        result.Add(assets[i].Object);
+                        result.Add(reference.Object);
                     }
                 }
             }
@@ -332,11 +392,13 @@ namespace Popcron.Referencer
             bool isComponent = typeof(Component).IsAssignableFrom(typeof(T));
             Type type = typeof(T);
             List<T> result = new List<T>();
-            for (int i = 0; i < assets.Count; i++)
+            int count = assets.Count;
+            for (int i = 0; i < count; i++)
             {
+                Reference reference = assets[i];
                 if (isComponent)
                 {
-                    if (assets[i].Object is GameObject prefab)
+                    if (reference.Object is GameObject prefab)
                     {
                         T component = prefab.GetComponent<T>();
                         if (component)
@@ -347,9 +409,9 @@ namespace Popcron.Referencer
                 }
                 else
                 {
-                    if (assets[i].Type == type || type.IsAssignableFrom(assets[i].Type))
+                    if (reference.Type == type || type.IsAssignableFrom(reference.Type))
                     {
-                        result.Add(assets[i].Object as T);
+                        result.Add(reference.Object as T);
                     }
                 }
             }
@@ -371,15 +433,17 @@ namespace Popcron.Referencer
         public List<Reference> GetAllReferences(Type type)
         {
             List<Reference> result = new List<Reference>();
-            for (int i = 0; i < assets.Count; i++)
+            int count = assets.Count;
+            for (int i = 0; i < count; i++)
             {
-                if (assets[i].Type == type)
+                Reference reference = assets[i];
+                if (reference.Type == type)
                 {
-                    result.Add(assets[i]);
+                    result.Add(reference);
                 }
-                else if (type.IsAssignableFrom(assets[i].Type))
+                else if (type.IsAssignableFrom(reference.Type))
                 {
-                    result.Add(assets[i]);
+                    result.Add(reference);
                 }
             }
 

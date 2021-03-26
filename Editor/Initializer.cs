@@ -14,6 +14,7 @@ namespace Popcron.Referencer
     public class Initializer
     {
         public const string InitializedScenesKey = "Popcron.Referencer.Editor.ScenesInitialized";
+        private const char ListSplitter = '|';
 
         private static bool IsSceneInitialized(string sceneName)
         {
@@ -23,8 +24,8 @@ namespace Popcron.Referencer
                 return false;
             }
 
-            List<string> names = scenesInitialized.Split('\\').ToList();
-            return names.Contains(sceneName);
+            string[] names = scenesInitialized.Split(ListSplitter);
+            return Array.IndexOf(names, sceneName) != -1;
         }
 
         private static void SetSceneInitialized(string sceneName, bool state)
@@ -35,7 +36,7 @@ namespace Popcron.Referencer
                 EditorPrefs.SetString(InitializedScenesKey, state ? sceneName : "");
             }
 
-            List<string> names = scenesInitialized.Split('\\').ToList();
+            List<string> names = scenesInitialized.Split(ListSplitter).ToList();
             if (names.Contains(sceneName) && !state)
             {
                 names.Remove(sceneName);
@@ -45,7 +46,8 @@ namespace Popcron.Referencer
                 names.Add(sceneName);
             }
 
-            EditorPrefs.SetString(InitializedScenesKey, string.Join("\\", names));
+            string newPref = string.Join(ListSplitter.ToString(), names);
+            EditorPrefs.SetString(InitializedScenesKey, newPref);
         }
 
         private static void ResetInitializedScenes()
@@ -149,6 +151,7 @@ namespace Popcron.Referencer
             if (update)
             {
                 Helper.LoadAll();
+                Debug.Log("[Referencer] Loaded all because of first launch");
             }
         }
 
@@ -160,8 +163,8 @@ namespace Popcron.Referencer
                 if (!IsSceneInitialized(scene.path))
                 {
                     Helper.LoadAll();
-                    Debug.Log("[Referencer] Loaded all because were about to play the scene when its not initialized");
-                    SetSceneInitialized(scene.name, true);
+                    Debug.Log($"[Referencer] Loaded all because were about to play the scene {scene.name} when its not initialized");
+                    SetSceneInitialized(scene.path, true);
                 }
             }
         }
@@ -171,8 +174,8 @@ namespace Popcron.Referencer
             if (!IsSceneInitialized(newScene.path))
             {
                 Helper.LoadAll();
-                //Debug.Log("[Referencer] Loaded all because we changed to a scene that isnt initialized");
-                SetSceneInitialized(newScene.name, true);
+                Debug.Log($"[Referencer] Loaded all because we changed to scene {newScene.name} that isnt initialized");
+                SetSceneInitialized(newScene.path, true);
             }
         }
 
