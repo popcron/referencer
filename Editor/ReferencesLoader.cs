@@ -98,6 +98,11 @@ namespace Popcron.Referencer
             Helper.LoadAll();
         }
 
+        public static void LoadAll(Settings settings)
+        {
+            Helper.LoadAll(settings);
+        }
+
         private static bool Add(string path, References references)
         {
             bool added = false;

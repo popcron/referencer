@@ -13,9 +13,13 @@ namespace Popcron.Referencer
         /// Loads all assets into the asset.
         /// Returns the true reference that was actually loaded into.
         /// </summary>
-        public static void LoadAll()
+        public static void LoadAll(Settings settings = null)
         {
-            Settings settings = Settings.Current;
+            if (!settings)
+            {
+                settings = Settings.Current;
+            }
+
             if (Application.isPlaying)
             {
                 Debug.Log("[Referencer] Loading everything at runtime!");
