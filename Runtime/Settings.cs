@@ -42,7 +42,7 @@ namespace Popcron.Referencer
         //constants
         public const string SettingsAssetName = "Referencer Settings.asset";
         public const string UniqueIdentifier = "Popcron.Referencer.Settings";
-        public const string GameObjectNameKey = $"{UniqueIdentifier}.GameObject";
+        public const string GameObjectNameKey = UniqueIdentifier + ".GameObject";
 
         /// <summary>
         /// The current settings data being used.
