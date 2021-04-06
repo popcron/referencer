@@ -496,18 +496,13 @@ namespace Popcron.Referencer
                 objectToPath = new Dictionary<Object, string>();
             }
 
-            Type type = item.Type;
-            string path = item.Path.Replace('\\', '/');
-            string name = unityObject.name;
-            string typeNameAndName = $"{type.FullName}:{name}";
-
             assets.Add(item);
             assetsReadOnly = assets.AsReadOnly();
 
             //add to dictionaries
-            pathToItem[path] = item;
-            nameToItem[typeNameAndName] = item;
-            objectToPath[unityObject] = path;
+            pathToItem[item.Path] = item;
+            nameToItem[item.Key] = item;
+            objectToPath[unityObject] = item.Path;
 
             return true;
         }

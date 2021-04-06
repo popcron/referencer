@@ -91,7 +91,8 @@ namespace Popcron.Referencer
         /// </summary>
         public bool IsBlacklisted(string path)
         {
-            for (int i = 0; i < blacklistFilter.Length; i++)
+            int length = blacklistFilter.Length;
+            for (int i = length - 1; i >= 0; i--)
             {
                 if (path.IndexOf(blacklistFilter[i], StringComparison.OrdinalIgnoreCase) != -1)
                 {
@@ -160,7 +161,8 @@ namespace Popcron.Referencer
         {
             LogLoadCount = 1 << 0,
             LogLoadReasons = 1 << 1,
-            Errors = 1 << 2
+            Errors = 1 << 2,
+            LogSettings = 1 << 3
         }
     }
 }

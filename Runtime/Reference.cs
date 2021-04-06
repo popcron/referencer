@@ -58,7 +58,15 @@ namespace Popcron.Referencer
             get => path;
             set
             {
-                path = value.Replace('\\', '/');
+                if (value.IndexOf('\\') != -1)
+                {
+                    path = value.Replace('\\', '/');
+                }
+                else
+                {
+                    path = value;
+                }
+
                 UpdateKey();
             }
         }
@@ -81,7 +89,15 @@ namespace Popcron.Referencer
 
         public Reference(Object unityObject, Type type, string path)
         {
-            this.path = path;
+            if (path.IndexOf('\\') != -1)
+            {
+                this.path = path.Replace('\\', '/');
+            }
+            else
+            {
+                this.path = path;
+            }
+
             this.unityObject = unityObject;
             this.typeName = type.FullName;
             this.systemType = type;

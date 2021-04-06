@@ -10,7 +10,18 @@ namespace Popcron.Referencer
         private static Dictionary<Type, AssetLoader> typeToLoader = null;
 
         public abstract Type Type { get; }
+
+        /// <summary>
+        /// Loads all assets of this type.
+        /// </summary>
         public abstract List<Reference> LoadAll(Settings settings);
+
+        /// <summary>
+        /// Loads all assets at this path relative to the Assets folder.
+        /// <code>
+        /// Example: Prefabs/Projectiles/Bullet.fbx
+        /// </code>
+        /// </summary>
         public abstract List<Reference> Load(string path);
 
         /// <summary>

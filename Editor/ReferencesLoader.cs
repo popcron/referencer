@@ -157,9 +157,17 @@ namespace Popcron.Referencer
 
             EditorUtility.ClearProgressBar();
             Utils.SetDirty(references);
+
+            //log load count
             if (Application.isBatchMode || (settings.Verbosity & Settings.LogVerbosity.LogLoadCount) == Settings.LogVerbosity.LogLoadCount)
             {
                 Debug.Log($"[Referencer] Loaded {references.Assets.Count} assets");
+            }
+
+            //log settings
+            if (Application.isBatchMode || (settings.Verbosity & Settings.LogVerbosity.LogSettings) == Settings.LogVerbosity.LogSettings)
+            {
+                Debug.Log($"[Referencer] Settings used: {JsonUtility.ToJson(settings, true)}");
             }
 
             return references;
@@ -187,7 +195,7 @@ namespace Popcron.Referencer
             AssetLoader loader = AssetLoader.Get(type);
             if (loader != null)
             {
-                path = path.Replace("Assets/", "");
+                path = path.Substring(7);
                 List<Reference> items = loader.Load(path);
                 foreach (Reference item in items)
                 {

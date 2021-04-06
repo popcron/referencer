@@ -37,7 +37,7 @@ namespace Popcron.Referencer
         /// <summary>
         /// Loads all assets from this relative path.
         /// <code>
-        /// Example: Prefabs/Projectiles
+        /// Example: Prefabs/Projectiles/Bullet.fbx
         /// </code>
         /// </summary>
         public static Object[] LoadAllAssetsAtPath(string path) => Utils.LoadAllAssetsAtPath($"Assets/{path}");
