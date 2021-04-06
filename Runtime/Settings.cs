@@ -80,7 +80,7 @@ namespace Popcron.Referencer
 #if UNITY_EDITOR
         [UnityEditor.Callbacks.DidReloadScripts]
 #endif
-        private static void Initialize()
+        public static void Initialize()
         {
             _ = NameToType;
             current = GetOrCreate();

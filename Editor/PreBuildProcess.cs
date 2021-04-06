@@ -10,11 +10,12 @@ namespace Popcron.Referencer
     /// </summary>
     public class PreBuildProcess : IPreprocessBuildWithReport
     {
-        int IOrderedCallback.callbackOrder => 0;
+        int IOrderedCallback.callbackOrder => int.MinValue + 1000;
 
         void IPreprocessBuildWithReport.OnPreprocessBuild(BuildReport report)
         {
             Debug.Log("[Referencer] Loaded all because project is being built");
+            Settings.Initialize();
             ReferencesLoader.LoadAll();
             AssetDatabase.SaveAssets();
         }
