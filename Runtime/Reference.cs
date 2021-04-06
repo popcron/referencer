@@ -118,7 +118,7 @@ namespace Popcron.Referencer
 
         private void UpdateKey()
         {
-            key = $"{typeName}:{System.IO.Path.GetFileNameWithoutExtension(Path)}";
+            key = $"{typeName}:{unityObject.name}";
         }
     }
 }
