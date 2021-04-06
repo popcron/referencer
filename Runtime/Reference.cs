@@ -118,7 +118,10 @@ namespace Popcron.Referencer
 
         private void UpdateKey()
         {
-            key = $"{typeName}:{unityObject.name}";
+            if (unityObject)
+            {
+                key = $"{typeName}:{unityObject.name}";
+            }
         }
     }
 }

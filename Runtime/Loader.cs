@@ -48,10 +48,11 @@ namespace Popcron.Referencer
         public static string[] FindAssets(string filter)
         {
             string[] paths = Utils.FindAssets(filter);
-            for (int i = 0; i < paths.Length; i++)
+            int count = paths.Length;
+            for (int i = count - 1; i >= 0; i--)
             {
                 ref string path = ref paths[i];
-                path = path.Replace("Assets/", "");
+                path = path.Substring(7);
             }
 
             return paths;
