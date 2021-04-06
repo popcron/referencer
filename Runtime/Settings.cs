@@ -82,6 +82,11 @@ namespace Popcron.Referencer
 #endif
         public static void Initialize()
         {
+            if (Application.isBatchMode)
+            {
+                Debug.Log($"[Referencer] Initializing settings");
+            }
+
             _ = NameToType;
             current = GetOrCreate();
         }
@@ -125,21 +130,27 @@ namespace Popcron.Referencer
             string name = Path.GetFileNameWithoutExtension(SettingsAssetName);
             string path = $"Assets/Resources/{SettingsAssetName}";
             Settings settings;
+
 #if UNITY_EDITOR
             settings = AssetDatabase.LoadAssetAtPath<Settings>(path);
+            if (Application.isBatchMode && !settings)
+            {
+                Debug.Log($"[Referencer] Settings at {path} does not exist, will create a new one");
+            }
 #else
             settings = Resources.Load<Settings>(name);
 #endif
-            bool exists = settings;
-            if (!exists)
+
+            if (!settings)
             {
                 //no console settings asset exists yet, so create one
                 settings = CreateInstance<Settings>();
                 settings.name = name;
+                Debug.Log($"[Referencer] New settings file was created");
             }
 
 #if UNITY_EDITOR
-            if (!exists)
+            if (!settings)
             {
                 //ensure the resources folder exists
                 if (!AssetDatabase.IsValidFolder("Assets/Resources"))
@@ -149,6 +160,7 @@ namespace Popcron.Referencer
 
                 //make a file here
                 AssetDatabase.CreateAsset(settings, path);
+                AssetDatabase.SaveAssets();
                 AssetDatabase.Refresh();
             }
 #endif

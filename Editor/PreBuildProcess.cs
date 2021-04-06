@@ -15,9 +15,13 @@ namespace Popcron.Referencer
         void IPreprocessBuildWithReport.OnPreprocessBuild(BuildReport report)
         {
             Debug.Log("[Referencer] Loaded all because project is being built");
+
             Settings.Initialize();
-            ReferencesLoader.LoadAll();
+            Settings settings = Settings.GetOrCreate();
+            ReferencesLoader.LoadAll(settings);
+            
             AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
         }
     }
 }
