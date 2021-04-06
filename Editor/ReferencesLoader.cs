@@ -59,7 +59,7 @@ namespace Popcron.Referencer
 
             if (hasChanged)
             {
-                Helper.SetDirty(references);
+                Utils.SetDirty(references);
             }
         }
 
@@ -92,15 +92,77 @@ namespace Popcron.Referencer
             return e.FullPath.IndexOf(".meta", StringComparison.OrdinalIgnoreCase) != -1;
         }
 
+        /// <summary>
+        /// Loads all assets into the asset.
+        /// Returns the true reference that was actually loaded into.
+        /// </summary>
         [MenuItem("Popcron/Referencer/Load all %#_x")]
-        public static void LoadAll()
+        private static void LoadAllThroughMenu()
         {
-            Helper.LoadAll();
+            Settings settings = Settings.Current;
+            if ((settings.Verbosity & Settings.LogVerbosity.LogLoadReasons) == Settings.LogVerbosity.LogLoadReasons)
+            {
+                Debug.Log("[Referencer] Loading all because user asked");
+            }
+
+            LoadAll();
         }
 
-        public static void LoadAll(Settings settings)
+        /// <summary>
+        /// Loads all assets into the asset.
+        /// Returns the true reference that was actually loaded into.
+        /// </summary>
+        public static References LoadAll(Settings settings = null)
         {
-            Helper.LoadAll(settings);
+            if (!settings)
+            {
+                settings = Settings.Current;
+            }
+
+            if (Application.isPlaying)
+            {
+                if ((settings.Verbosity & Settings.LogVerbosity.LogLoadReasons) == Settings.LogVerbosity.LogLoadReasons)
+                {
+                    Debug.Log("[Referencer] Loading everything at runtime!");
+                }
+            }
+
+            List<AssetLoader> loaders = AssetLoader.Loaders;
+            if (loaders.Count == 0)
+            {
+                if ((settings.Verbosity & Settings.LogVerbosity.Errors) == Settings.LogVerbosity.Errors)
+                {
+                    Debug.LogError("[Referencer] No loaders found");
+                }
+            }
+
+            //lol fucken cleareth they referencium
+            References references = References.Current;
+            references.Clear();
+
+            //then loop though all loaders and load the assets of their types
+            for (int l = 0; l < loaders.Count; l++)
+            {
+                float progress = Mathf.Clamp01(l / (float)loaders.Count);
+                EditorUtility.DisplayProgressBar("Referencer", "Loading all references", progress);
+
+                AssetLoader loader = loaders[l];
+                List<Reference> items = loader.LoadAll(settings);
+                for (int i = 0; i < items.Count; i++)
+                {
+                    Reference item = items[i];
+                    references.Add(item, settings);
+                }
+            }
+
+            EditorUtility.ClearProgressBar();
+            Utils.SetDirty(references);
+            if (Application.isBatchMode || (settings.Verbosity & Settings.LogVerbosity.LogLoadCount) == Settings.LogVerbosity.LogLoadCount)
+            {
+                Debug.Log($"[Referencer] Loaded {references.Assets.Count} assets");
+            }
+
+            return references;
         }
 
         private static bool Add(string path, References references)
@@ -120,6 +182,7 @@ namespace Popcron.Referencer
 
         private static bool Add(string path, Type type, References references)
         {
+            Settings settings = Settings.Current;
             bool added = false;
             AssetLoader loader = AssetLoader.Get(type);
             if (loader != null)
@@ -128,7 +191,7 @@ namespace Popcron.Referencer
                 List<Reference> items = loader.Load(path);
                 foreach (Reference item in items)
                 {
-                    added |= references.Add(item);
+                    added |= references.Add(item, settings);
                 }
             }
 

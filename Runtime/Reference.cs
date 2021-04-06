@@ -19,6 +19,9 @@ namespace Popcron.Referencer
         [NonSerialized]
         private Type systemType;
 
+        [NonSerialized]
+        private string key;
+
         /// <summary>
         /// Reference to the asset itself.
         /// </summary>
@@ -38,7 +41,7 @@ namespace Popcron.Referencer
                     return null;
                 }
 
-                if (systemType == null)
+                if (systemType is null)
                 {
                     systemType = Settings.GetType(typeName);
                 }
@@ -53,7 +56,36 @@ namespace Popcron.Referencer
         public string Path
         {
             get => path;
-            set => path = value.Replace('\\', '/');
+            set
+            {
+                path = value.Replace('\\', '/');
+                UpdateKey();
+            }
+        }
+
+        /// <summary>
+        /// A semi-unique key used in dictionaries that represents Type:Name.
+        /// </summary>
+        public string Key
+        {
+            get
+            {
+                if (string.IsNullOrEmpty(key))
+                {
+                    UpdateKey();
+                }
+
+                return key;
+            }
+        }
+
+        public Reference(Object unityObject, Type type, string path)
+        {
+            this.path = path;
+            this.unityObject = unityObject;
+            this.typeName = type.FullName;
+            this.systemType = type;
+            UpdateKey();
         }
 
         /// <summary>
@@ -69,21 +101,24 @@ namespace Popcron.Referencer
                 }
                 else
                 {
-                    Debug.LogError($"{unityObject} is not an asset of type {Type}");
+                    if ((Settings.Current.Verbosity & Settings.LogVerbosity.Errors) == Settings.LogVerbosity.Errors)
+                    {
+                        Debug.LogError($"[Referencer] Cannot assign {unityObject} because its not an asset of type {Type}");
+                    }
                 }
             }
             else
             {
-                Debug.LogError($"Tried to assign reference at path {path} a null object");
+                if ((Settings.Current.Verbosity & Settings.LogVerbosity.Errors) == Settings.LogVerbosity.Errors)
+                {
+                    Debug.LogError($"[Referencer] Tried to assign reference at path {path} to a null object");
+                }
             }
         }
 
-        public Reference(Object unityObject, Type type, string path)
+        private void UpdateKey()
         {
-            this.path = path;
-            this.unityObject = unityObject;
-            this.typeName = type.FullName;
-            this.systemType = type;
+            key = $"{typeName}:{System.IO.Path.GetFileNameWithoutExtension(Path)}";
         }
     }
 }

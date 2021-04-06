@@ -59,7 +59,7 @@ namespace Popcron.Referencer
         {
             EditorSceneManager.activeSceneChangedInEditMode += OnChangedScene;
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
-
+            Settings settings = Settings.Current;
             bool update = false;
 
             //find the .gitignore file by searching upwards 3 times
@@ -79,15 +79,16 @@ namespace Popcron.Referencer
                     {
                         ignoreLines.Add(comment);
                     }
-                    else
-                    {
-
-                    }
 
                     ignoreLines.Add(entry);
                     update = true;
-                    Debug.Log("[Referencer] A .gitignore file was found. Added a new entry for the Referencer asset file.");
+                    Debug.Log("[Referencer] A .gitignore file was found. Added a new entry for the Referencer asset file");
                     File.WriteAllLines(ignoreFilePath, ignoreLines.ToArray());
+
+                    if ((settings.Verbosity & Settings.LogVerbosity.LogLoadReasons) == Settings.LogVerbosity.LogLoadReasons)
+                    {
+                        Debug.Log("[Referencer] Loading all because gitignore didn't have Referencer entry before");
+                    }
                 }
             }
 
@@ -101,6 +102,11 @@ namespace Popcron.Referencer
             {
                 update = true;
                 ResetInitializedScenes();
+
+                if ((settings.Verbosity & Settings.LogVerbosity.LogLoadReasons) == Settings.LogVerbosity.LogLoadReasons)
+                {
+                    Debug.Log("[Referencer] Loading all because of a launch");
+                }
             }
 
             //check against license file time
@@ -114,6 +120,11 @@ namespace Popcron.Referencer
                     //if editor log doesnt exist, then update
                     update = true;
                     ResetInitializedScenes();
+
+                    if ((settings.Verbosity & Settings.LogVerbosity.LogLoadReasons) == Settings.LogVerbosity.LogLoadReasons)
+                    {
+                        Debug.Log("[Referencer] Loading all because of a launch");
+                    }
                 }
                 else
                 {
@@ -133,6 +144,11 @@ namespace Popcron.Referencer
                         EditorPrefs.SetString(key, then.ToLongDateString());
                         update = true;
                         ResetInitializedScenes();
+
+                        if ((settings.Verbosity & Settings.LogVerbosity.LogLoadReasons) == Settings.LogVerbosity.LogLoadReasons)
+                        {
+                            Debug.Log("[Referencer] Loading all because of a launch");
+                        }
                     }
                 }
             }
@@ -144,14 +160,18 @@ namespace Popcron.Referencer
                 if (references.Count == 0)
                 {
                     update = true;
+                    if ((settings.Verbosity & Settings.LogVerbosity.LogLoadReasons) == Settings.LogVerbosity.LogLoadReasons)
+                    {
+                        Debug.Log("[Referencer] Loading all because no references currently exist");
+                    }
+
                     ResetInitializedScenes();
                 }
             }
 
             if (update)
             {
-                Helper.LoadAll();
-                Debug.Log("[Referencer] Loaded all because of first launch");
+                ReferencesLoader.LoadAll();
             }
         }
 
@@ -162,8 +182,8 @@ namespace Popcron.Referencer
             {
                 if (!IsSceneInitialized(scene.path))
                 {
-                    Helper.LoadAll();
                     Debug.Log($"[Referencer] Loaded all because were about to play the scene {scene.name} when its not initialized");
+                    ReferencesLoader.LoadAll();
                     SetSceneInitialized(scene.path, true);
                 }
             }
@@ -173,8 +193,8 @@ namespace Popcron.Referencer
         {
             if (!IsSceneInitialized(newScene.path))
             {
-                Helper.LoadAll();
                 Debug.Log($"[Referencer] Loaded all because we changed to scene {newScene.name} that isnt initialized");
+                ReferencesLoader.LoadAll();
                 SetSceneInitialized(newScene.path, true);
             }
         }

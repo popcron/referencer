@@ -63,6 +63,9 @@ namespace Popcron.Referencer
         [SerializeField]
         private string[] blacklistFilter = { "Resources/", "Game/", ".html" };
 
+        [SerializeField]
+        private LogVerbosity verbosity = 0;
+
         /// <summary>
         /// The current blacklist filter.
         /// </summary>
@@ -72,12 +75,15 @@ namespace Popcron.Referencer
             set => blacklistFilter = value;
         }
 
+        public LogVerbosity Verbosity => verbosity;
+
 #if UNITY_EDITOR
         [UnityEditor.Callbacks.DidReloadScripts]
 #endif
         private static void Initialize()
         {
             _ = NameToType;
+            current = GetOrCreate();
         }
 
         /// <summary>
@@ -116,7 +122,13 @@ namespace Popcron.Referencer
         {
             //find from resources
             string name = Path.GetFileNameWithoutExtension(SettingsAssetName);
-            Settings settings = Resources.Load<Settings>(name);
+            string path = $"Assets/Resources/{SettingsAssetName}";
+            Settings settings;
+#if UNITY_EDITOR
+            settings = AssetDatabase.LoadAssetAtPath<Settings>(path);
+#else
+            settings = Resources.Load<Settings>(name);
+#endif
             bool exists = settings;
             if (!exists)
             {
@@ -135,13 +147,20 @@ namespace Popcron.Referencer
                 }
 
                 //make a file here
-                string path = $"Assets/Resources/{SettingsAssetName}";
                 AssetDatabase.CreateAsset(settings, path);
                 AssetDatabase.Refresh();
             }
 #endif
 
             return settings;
+        }
+
+        [Flags]
+        public enum LogVerbosity : int
+        {
+            LogLoadCount = 1 << 0,
+            LogLoadReasons = 1 << 1,
+            Errors = 1 << 2
         }
     }
 }

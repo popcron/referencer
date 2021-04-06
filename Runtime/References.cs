@@ -265,7 +265,7 @@ namespace Popcron.Referencer
                                 {
                                     return component;
                                 }
-                            }   
+                            }
                         }
                     }
                 }
@@ -295,7 +295,7 @@ namespace Popcron.Referencer
                             {
                                 return component;
                             }
-                        }   
+                        }
                     }
                     else if (item.Type == type)
                     {
@@ -453,7 +453,7 @@ namespace Popcron.Referencer
         /// <summary>
         /// Adds an item to the list of builtin references manually. Returns true if successfull.
         /// </summary>
-        public bool Add(Reference item)
+        public bool Add(Reference item, Settings settings = null)
         {
             //first check with path and asset if it already exists
             //if it does, dont add
@@ -462,8 +462,12 @@ namespace Popcron.Referencer
                 return false;
             }
 
+            if (!settings)
+            {
+                settings = Settings.Current;
+            }
+
             //check if this item belongs to a path that should be ignored
-            Settings settings = Settings.Current;
             if (settings.IsBlacklisted(item.Path))
             {
                 return false;
@@ -510,6 +514,7 @@ namespace Popcron.Referencer
 
         internal void EnsureCacheExists(bool forceRecreate = false)
         {
+            Settings settings = Settings.Current;
             bool errorFound = false;
             if (pathToItem is null || forceRecreate)
             {
@@ -537,7 +542,10 @@ namespace Popcron.Referencer
                     }
                     else
                     {
-                        Debug.LogWarning($"[Referencer] {reference?.Object?.name} has no path, so not adding to reference db");
+                        if ((settings.Verbosity & Settings.LogVerbosity.Errors) == Settings.LogVerbosity.Errors)
+                        {
+                            Debug.LogWarning($"[Referencer] {reference?.Object?.name} has no path, so not adding to reference db");
+                        }
                     }
                 }
             }
@@ -563,19 +571,21 @@ namespace Popcron.Referencer
                         continue;
                     }
 
-                    string key = $"{type.FullName}:{Path.GetFileNameWithoutExtension(reference.Path)}";
-                    if (!string.IsNullOrEmpty(key))
+                    if (!string.IsNullOrEmpty(reference.Key))
                     {
-                        if (nameToItem.ContainsKey(key))
+                        if (nameToItem.ContainsKey(reference.Key))
                         {
                             continue;
                         }
 
-                        nameToItem.Add(key, assets[i]);
+                        nameToItem.Add(reference.Key, assets[i]);
                     }
                     else
                     {
-                        Debug.LogWarning($"[Referencer] {reference?.Object?.name} has no path, so not adding to reference db");
+                        if ((settings.Verbosity & Settings.LogVerbosity.Errors) == Settings.LogVerbosity.Errors)
+                        {
+                            Debug.LogWarning($"[Referencer] {reference?.Object?.name} has no path, so not adding to reference db");
+                        }
                     }
                 }
             }
@@ -611,7 +621,11 @@ namespace Popcron.Referencer
             //an error in the database was found, gon refresh now then
             if (errorFound)
             {
-                Relay.LoadAll();
+                Utils.LoadAll();
+                if ((settings.Verbosity & Settings.LogVerbosity.LogLoadReasons) == Settings.LogVerbosity.LogLoadReasons)
+                {
+                    Debug.Log("[References] Loading all because an error was found in the db");
+                }
             }
         }
 
