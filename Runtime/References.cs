@@ -502,7 +502,14 @@ namespace Popcron.Referencer
             //add to dictionaries
             pathToItem[item.Path] = item;
             nameToItem[item.Key] = item;
-            objectToPath[unityObject] = item.Path;
+            try
+            {
+                objectToPath[unityObject] = item.Path;
+            }
+            catch (Exception exception)
+            {
+                Debug.LogError($"Exception when caching {unityObject}\n{exception}");
+            }
 
             return true;
         }
