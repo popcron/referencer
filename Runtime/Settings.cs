@@ -80,6 +80,7 @@ namespace Popcron.Referencer
 #if UNITY_EDITOR
         [UnityEditor.Callbacks.DidReloadScripts]
 #endif
+        [RuntimeInitializeOnLoadMethod]
         public static void Initialize()
         {
             if (Application.isBatchMode)
