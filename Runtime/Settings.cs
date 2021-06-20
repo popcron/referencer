@@ -28,7 +28,15 @@ namespace Popcron.Referencer
         }
 
         [SerializeField]
-        private string[] blacklistFilter = { "Resources/", "Game/", ".html" };
+        private string[] blacklistFilter = {
+            "Resources/",
+            "Game/",
+            "Editor/",
+            "Plugins/",
+            ".html",
+            ".shader",
+            ".cs"
+        };
 
         [SerializeField]
         private LogVerbosity verbosity = 0;

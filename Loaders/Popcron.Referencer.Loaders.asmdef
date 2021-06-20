@@ -1,15 +1,18 @@
 {
     "name": "Popcron.Referencer.Loaders",
+    "rootNamespace": "",
     "references": [
-        "Popcron.Referencer",
-        "Popcron.Referencer.Editor"
+        "GUID:24ba3739df0ec484f94846c415d9e52a"
     ],
-    "optionalUnityReferences": [],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,
-    "defineConstraints": []
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

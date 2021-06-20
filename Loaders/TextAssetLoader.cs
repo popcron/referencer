@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace Popcron.Referencer
@@ -23,6 +24,11 @@ namespace Popcron.Referencer
         public override List<Reference> Load(string path)
         {
             UnityEngine.Object prefab = Loader.LoadAssetAtPath(path, Type);
+            if (prefab is AssemblyDefinitionAsset)
+            {
+                return new List<Reference>();
+            }
+
             Reference item = new Reference(prefab, Type, path);
             return new List<Reference>() { item };
         }

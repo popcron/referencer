@@ -147,7 +147,10 @@ namespace Popcron.Referencer
                 for (int i = 0; i < items.Count; i++)
                 {
                     Reference item = items[i];
-                    references.Add(item, settings);
+                    if (item != null)
+                    {
+                        references.Add(item, settings);
+                    }
                 }
             }
 
