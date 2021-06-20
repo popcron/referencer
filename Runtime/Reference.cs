@@ -41,9 +41,9 @@ namespace Popcron.Referencer
                     return null;
                 }
 
-                if (systemType is null)
+                if (systemType == null)
                 {
-                    systemType = Settings.GetType(typeName);
+                    systemType = Utils.GetType(typeName);
                 }
 
                 return systemType;

@@ -11,7 +11,6 @@ namespace Popcron.Referencer
     public class ReferencesInspector : Editor
     {
         private List<Reference> list = new List<Reference>();
-        private static List<Type> allTypes = null;
         private string selectedAsset;
         private int lastSize;
 
@@ -124,37 +123,6 @@ namespace Popcron.Referencer
             }
         }
 
-        /// <summary>
-        /// Custom get type method because of stupid system get type.
-        /// </summary>
-        private Type GetType(string type)
-        {
-            if (allTypes == null)
-            {
-                allTypes = new List<Type>();
-                Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (Assembly assembly in assemblies)
-                {
-                    Type[] types = assembly.GetTypes();
-                    allTypes.AddRange(types);
-                }
-            }
-
-            for (int i = 0; i < allTypes.Count; i++)
-            {
-                if (allTypes[i].FullName.Equals(type, StringComparison.OrdinalIgnoreCase))
-                {
-                    return allTypes[i];
-                }
-                else if (allTypes[i].Name.Equals(type, StringComparison.OrdinalIgnoreCase))
-                {
-                    return allTypes[i];
-                }
-            }
-
-            return null;
-        }
-
         private void Search(string query)
         {
             References references = target as References;
@@ -171,7 +139,7 @@ namespace Popcron.Referencer
                 if (query.StartsWith("t:", StringComparison.OrdinalIgnoreCase))
                 {
                     string type = query.Substring(2);
-                    Type systemType = GetType(type);
+                    Type systemType = Utils.GetType(type);
                     for (int i = 0; i < references.Assets.Count; i++)
                     {
                         Reference item = references.Assets[i];

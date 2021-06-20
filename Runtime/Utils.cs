@@ -2,6 +2,7 @@
 using System.Reflection;
 using UnityEngine;
 using Object = UnityEngine.Object;
+using System.Collections.Generic;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -17,37 +18,56 @@ namespace Popcron.Referencer
 #endif
     public static class Utils
     {
+        private static Dictionary<string, Type> nameToType = null;
         private static Type referencesLoaderType = null;
         private static MethodInfo loadAllMethod = null;
+
+        public static Dictionary<string, Type> NameToType
+        {
+            get
+            {
+                if (nameToType == null)
+                {
+                    Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                    nameToType = new Dictionary<string, Type>();
+                    for (int a = 0; a < assemblies.Length; a++)
+                    {
+                        Assembly assembly = assemblies[a];
+                        Type[] types = assembly.GetTypes();
+                        for (int t = 0; t < types.Length; t++)
+                        {
+                            Type type = types[t];
+                            nameToType[type.FullName] = type;
+                            nameToType[type.Name] = type;
+                        }
+                    }
+                }
+
+                return nameToType;
+            }
+        }
 
         static Utils()
         {
             if (referencesLoaderType is null)
             {
-                referencesLoaderType = Type.GetType("Popcron.Referencer.ReferencesLoader, Popcron.Referencer.Editor");
-            }
-
-            //still didnt find, scrape everything
-            if (referencesLoaderType is null)
-            {
-                Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (Assembly assembly in assemblies)
-                {
-                    if (assembly.FullName.StartsWith("Popcron.Referencer.Editor,"))
-                    {
-                        Type[] types = assembly.GetTypes();
-                        foreach (Type type in types)
-                        {
-                            if (type.FullName == "Popcron.Referencer.ReferencesLoader")
-                            {
-                                referencesLoaderType = type;
-                            }
-                        }
-                    }
-                }
+                referencesLoaderType = GetType("Popcron.Referencer.ReferencesLoader");
             }
 
             loadAllMethod = referencesLoaderType.GetMethod("LoadAll");
+        }
+
+        /// <summary>
+        /// Returns the type that this reference is of.
+        /// </summary>
+        public static Type GetType(string fullTypeName)
+        {
+            if (NameToType.TryGetValue(fullTypeName, out Type resultType))
+            {
+                return resultType;
+            }
+
+            return null;
         }
 
         /// <summary>

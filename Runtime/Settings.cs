@@ -13,31 +13,6 @@ namespace Popcron.Referencer
     public class Settings : ScriptableObject
     {
         private static Settings current;
-        private static Dictionary<string, Type> nameToType;
-
-        public static Dictionary<string, Type> NameToType
-        {
-            get
-            {
-                if (nameToType is null)
-                {
-                    Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                    nameToType = new Dictionary<string, Type>();
-                    for (int a = 0; a < assemblies.Length; a++)
-                    {
-                        Assembly assembly = assemblies[a];
-                        Type[] types = assembly.GetTypes();
-                        for (int t = 0; t < types.Length; t++)
-                        {
-                            Type type = types[t];
-                            nameToType[type.FullName] = type;
-                        }
-                    }
-                }
-
-                return nameToType;
-            }
-        }
 
         //constants
         public const string SettingsAssetName = "Referencer Settings.asset";
@@ -88,7 +63,6 @@ namespace Popcron.Referencer
                 Debug.Log($"[Referencer] Initializing settings");
             }
 
-            _ = NameToType;
             current = GetOrCreate();
         }
 
@@ -107,19 +81,6 @@ namespace Popcron.Referencer
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Returns the type that this reference is of.
-        /// </summary>
-        public static Type GetType(string fullTypeName)
-        {
-            if (NameToType.TryGetValue(fullTypeName, out Type resultType))
-            {
-                return resultType;
-            }
-
-            return null;
         }
 
         /// <summary>

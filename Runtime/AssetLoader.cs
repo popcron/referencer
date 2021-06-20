@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace Popcron.Referencer
 {
     public abstract class AssetLoader
@@ -34,7 +38,19 @@ namespace Popcron.Referencer
                 if (allLoaders is null)
                 {
                     allLoaders = new List<AssetLoader>();
-                    foreach (KeyValuePair<string, Type> element in Settings.NameToType)
+
+#if UNITY_EDITOR && UNITY_2019_2_OR_NEWER
+                    TypeCache.TypeCollection assetLoaderTypes = TypeCache.GetTypesDerivedFrom<AssetLoader>();
+                    foreach (Type type in assetLoaderTypes)
+                    {
+                        if (!type.IsAbstract)
+                        {
+                            AssetLoader newLoader = (AssetLoader)Activator.CreateInstance(type);
+                            allLoaders.Add(newLoader);
+                        }
+                    }
+#else
+                    foreach (KeyValuePair<string, Type> element in Utils.NameToType)
                     {
                         Type type = element.Value;
                         if (!type.IsAbstract && typeof(AssetLoader).IsAssignableFrom(type))
@@ -43,6 +59,7 @@ namespace Popcron.Referencer
                             allLoaders.Add(newLoader);
                         }
                     }
+#endif
                 }
 
                 return allLoaders;
