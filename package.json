@@ -3,5 +3,14 @@
     "displayName": "Popcron Referencer",
     "version": "1.6.7",
     "unity": "2018.3",
-    "description": "Quick referencer utility."
+    "description": "Quick referencer utility.",
+    "keywords": [
+        "referencer",
+        "assets"
+    ],
+    "author": {
+        "name": "popcron",
+        "url": "https://github.com/popcron"
+        },
+    "type": "tool"
 }
