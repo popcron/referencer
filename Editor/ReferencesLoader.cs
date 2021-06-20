@@ -38,7 +38,12 @@ namespace Popcron.Referencer
                 {
                     Profiler.BeginSample("Process file system event");
 
+                    #if UNITY_2021_2_OR_NEWER
                     string fullPath = fileEvent.Name;
+                    #else
+                    string fullPath = fileEvent.FullPath;
+                    #endif
+
                     string assetPath = fullPath.Replace(".meta", "");
                     assetPath = assetPath.Replace("\\", "/");
                     assetPath = assetPath.Substring(projectFolder.Length + 1);
