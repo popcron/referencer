@@ -1,7 +1,6 @@
 ﻿using Popcron.Referencer;
 using UnityEditor;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 namespace Popcron.References
 {
@@ -14,13 +13,13 @@ namespace Popcron.References
 
         }
 
-        public override void OnActivate(string searchContext, VisualElement rootElement)
-        {
-            settings = new SerializedObject(Settings.Current);
-        }
-
         public override void OnGUI(string searchContext)
         {
+            if (settings == null)
+            {
+                settings = new SerializedObject(Settings.Current);
+            }
+
             float x = 7;
             float y = 10;
             Rect rect = new Rect(x, y, Screen.width - x, Screen.height - y);

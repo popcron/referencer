@@ -16,10 +16,7 @@ namespace Popcron.Referencer
         {
             Debug.Log("[Referencer] Loaded all because project is being built");
 
-            Settings.Initialize();
-            Settings settings = Settings.GetOrCreate();
-            ReferencesLoader.LoadAll(settings);
-            
+            ReferencesLoader.LoadAll();
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
         }

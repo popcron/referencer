@@ -1,12 +1,5 @@
 ﻿using System;
 using UnityEngine;
-using System.Reflection;
-using System.Collections.Generic;
-using System.IO;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
 
 namespace Popcron.Referencer
 {
@@ -15,7 +8,6 @@ namespace Popcron.Referencer
         private static Settings current;
 
         //constants
-        public const string SettingsAssetName = "Referencer Settings.asset";
         public const string UniqueIdentifier = "Popcron.Referencer.Settings";
         public const string GameObjectNameKey = UniqueIdentifier + ".GameObject";
 
@@ -28,7 +20,7 @@ namespace Popcron.Referencer
             {
                 if (!current)
                 {
-                    current = GetOrCreate();
+                    current = Utils.GetOrCreate<Settings>("Assets/Referencer Settings.asset");
                 }
 
                 return current;
@@ -52,18 +44,9 @@ namespace Popcron.Referencer
 
         public LogVerbosity Verbosity => verbosity;
 
-#if UNITY_EDITOR
-        [UnityEditor.Callbacks.DidReloadScripts]
-#endif
-        [RuntimeInitializeOnLoadMethod]
-        public static void Initialize()
+        private void OnEnable()
         {
-            if (Application.isBatchMode)
-            {
-                Debug.Log($"[Referencer] Initializing settings");
-            }
-
-            current = GetOrCreate();
+            current = this;
         }
 
         /// <summary>
@@ -81,53 +64,6 @@ namespace Popcron.Referencer
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Returns an existing console settings asset, or creates a new one if none exist.
-        /// </summary>
-        public static Settings GetOrCreate()
-        {
-            //find from resources
-            string name = Path.GetFileNameWithoutExtension(SettingsAssetName);
-            string path = $"Assets/Resources/{SettingsAssetName}";
-            Settings settings;
-
-#if UNITY_EDITOR
-            settings = AssetDatabase.LoadAssetAtPath<Settings>(path);
-            if (Application.isBatchMode && !settings)
-            {
-                Debug.Log($"[Referencer] Settings at {path} does not exist, will create a new one");
-            }
-#else
-            settings = Resources.Load<Settings>(name);
-#endif
-
-            if (!settings)
-            {
-                //no console settings asset exists yet, so create one
-                settings = CreateInstance<Settings>();
-                settings.name = name;
-                Debug.Log($"[Referencer] New settings file was created");
-            }
-
-#if UNITY_EDITOR
-            if (!settings)
-            {
-                //ensure the resources folder exists
-                if (!AssetDatabase.IsValidFolder("Assets/Resources"))
-                {
-                    AssetDatabase.CreateFolder("Assets", "Resources");
-                }
-
-                //make a file here
-                AssetDatabase.CreateAsset(settings, path);
-                AssetDatabase.SaveAssets();
-                AssetDatabase.Refresh();
-            }
-#endif
-
-            return settings;
         }
 
         [Flags]

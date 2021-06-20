@@ -38,10 +38,11 @@ namespace Popcron.Referencer
                 {
                     Profiler.BeginSample("Process file system event");
 
-                    string assetPath = fileEvent.FullPath.Replace(".meta", "");
+                    string fullPath = fileEvent.Name;
+                    string assetPath = fullPath.Replace(".meta", "");
                     assetPath = assetPath.Replace("\\", "/");
                     assetPath = assetPath.Substring(projectFolder.Length + 1);
-                    if (File.Exists(fileEvent.FullPath))
+                    if (File.Exists(fullPath))
                     {
                         bool success = Add(assetPath, references);
                         hasChanged |= success;
@@ -111,13 +112,9 @@ namespace Popcron.Referencer
         /// Loads all assets into the asset.
         /// Returns the true reference that was actually loaded into.
         /// </summary>
-        public static References LoadAll(Settings settings = null)
+        public static References LoadAll()
         {
-            if (!settings)
-            {
-                settings = Settings.Current;
-            }
-
+            Settings settings = Settings.Current;
             if (Application.isPlaying)
             {
                 if ((settings.Verbosity & Settings.LogVerbosity.LogLoadReasons) == Settings.LogVerbosity.LogLoadReasons)

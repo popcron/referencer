@@ -3,6 +3,8 @@ using System.Reflection;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -54,7 +56,10 @@ namespace Popcron.Referencer
                 referencesLoaderType = GetType("Popcron.Referencer.ReferencesLoader");
             }
 
-            loadAllMethod = referencesLoaderType.GetMethod("LoadAll");
+            if (referencesLoaderType != null)
+            {
+                loadAllMethod = referencesLoaderType.GetMethod("LoadAll");
+            }
         }
 
         /// <summary>
@@ -76,8 +81,11 @@ namespace Popcron.Referencer
         /// </summary>
         public static References LoadAll()
         {
-            Settings settings = Settings.Current;
-            return (References)loadAllMethod.Invoke(null, new object[] { settings });
+#if UNITY_EDITOR
+            return (References)loadAllMethod.Invoke(null, null);
+#else
+            return References.Current;
+#endif
         }
 
         /// <summary>
@@ -85,6 +93,7 @@ namespace Popcron.Referencer
         /// </summary>
         public static void SetDirty(Object obj)
         {
+#if UNITY_EDITOR
             //references somehow doesnt exist
             if (!obj)
             {
@@ -97,7 +106,6 @@ namespace Popcron.Referencer
                 return;
             }
 
-#if UNITY_EDITOR
             EditorUtility.SetDirty(obj);
 #endif
         }
@@ -155,5 +163,76 @@ namespace Popcron.Referencer
             return null;
 #endif
         }
+
+        /// <summary>
+        /// Returns an existing asset of this type if it exists, or creates a new one at this path otherwise.
+        /// </summary>
+        public static T GetOrCreate<T>(string path) where T : ScriptableObject
+        {
+#if UNITY_EDITOR
+            //find in preloaded assets
+            Object[] preloadedAssets = PlayerSettings.GetPreloadedAssets();
+            for (int i = 0; i < preloadedAssets.Length; i++)
+            {
+                Object existingAsset = preloadedAssets[i];
+                if (existingAsset is T)
+                {
+                    return existingAsset as T;
+                }
+            }
+
+            //find in asset database but not as a preloaded asset
+            string[] assetPaths = FindAssets<T>();
+            if (assetPaths.Length > 0)
+            {
+                for (int i = 0; i < assetPaths.Length; i++)
+                {
+                    T existingAsset = LoadAssetAtPath<T>(assetPaths[0]);
+                    if (existingAsset)
+                    {
+                        preloadedAssets[i] = existingAsset;
+                        PlayerSettings.SetPreloadedAssets(preloadedAssets);
+                        return existingAsset;
+                    }
+                }
+            }
+
+            //attempt to assign a new instance to an empty slot
+            for (int i = 0; i < preloadedAssets.Length; i++)
+            {
+                if (!preloadedAssets[i])
+                {
+                    preloadedAssets[i] = CreateInstance<T>(path);
+                    PlayerSettings.SetPreloadedAssets(preloadedAssets);
+                    return preloadedAssets[i] as T;
+                }
+            }
+
+            //didnt assign to an empty slot, add to the list
+            List<Object> preloadedAssetsList = preloadedAssets.ToList();
+            T newAsset = CreateInstance<T>(path);
+            preloadedAssetsList.Add(newAsset);
+            PlayerSettings.SetPreloadedAssets(preloadedAssetsList.ToArray());
+            return newAsset;
+
+#else
+            T asset = null;
+            return asset;
+#endif
+        }
+
+#if UNITY_EDITOR
+        private static T CreateInstance<T>(string path) where T : ScriptableObject
+        {
+            string name = Path.GetFileNameWithoutExtension(path);
+            T asset = ScriptableObject.CreateInstance<T>();
+            asset.name = name;
+
+            //make a file here
+            AssetDatabase.CreateAsset(asset, path);
+            AssetDatabase.Refresh();
+            return asset;
+        }
+#endif
     }
 }

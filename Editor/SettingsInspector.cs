@@ -9,15 +9,18 @@ namespace Popcron.References
     {
         public static void Show(SerializedObject serializedObject)
         {
-            serializedObject.Update();
+            if (serializedObject != null)
+            {
+                serializedObject.Update();
 
-            SerializedProperty blacklistFilter = serializedObject.FindProperty("blacklistFilter");
-            SerializedProperty verbosity = serializedObject.FindProperty("verbosity");
+                SerializedProperty blacklistFilter = serializedObject.FindProperty("blacklistFilter");
+                SerializedProperty verbosity = serializedObject.FindProperty("verbosity");
 
-            EditorGUILayout.PropertyField(blacklistFilter, new GUIContent("Blacklist Filter"));
-            EditorGUILayout.PropertyField(verbosity, new GUIContent("Verbosity"));
+                EditorGUILayout.PropertyField(blacklistFilter, new GUIContent("Blacklist Filter"));
+                EditorGUILayout.PropertyField(verbosity, new GUIContent("Verbosity"));
 
-            serializedObject.ApplyModifiedProperties();
+                serializedObject.ApplyModifiedProperties();
+            }
         }
 
         public override void OnInspectorGUI()

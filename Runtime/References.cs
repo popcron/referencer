@@ -1,13 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using UnityEngine;
-
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
 using Object = UnityEngine.Object;
 using Random = System.Random;
 
@@ -33,7 +27,7 @@ namespace Popcron.Referencer
             {
                 if (!current)
                 {
-                    current = GetOrCreate();
+                    current = Utils.GetOrCreate<References>("Assets/References.asset");
                 }
 
                 return current;
@@ -51,6 +45,11 @@ namespace Popcron.Referencer
 
                 return assetsReadOnly;
             }
+        }
+
+        private void OnEnable()
+        {
+            current = this;
         }
 
         /// <summary>
@@ -650,40 +649,6 @@ namespace Popcron.Referencer
                     Debug.Log("[References] Loading all because an error was found in the db");
                 }
             }
-        }
-
-        /// <summary>
-        /// Returns an existing console settings asset, or creates a new one if none exist.
-        /// </summary>
-        public static References GetOrCreate()
-        {
-            //find from resources
-            References references = Resources.Load<References>("References");
-            bool exists = references;
-            if (!exists)
-            {
-                //no console settings asset exists yet, so create one
-                references = CreateInstance<References>();
-                references.name = "References";
-            }
-
-#if UNITY_EDITOR
-            if (!exists)
-            {
-                //ensure the resources folder exists
-                if (!AssetDatabase.IsValidFolder("Assets/Resources"))
-                {
-                    AssetDatabase.CreateFolder("Assets", "Resources");
-                }
-
-                //make a file here
-                string path = "Assets/Resources/References.asset";
-                AssetDatabase.CreateAsset(references, path);
-                AssetDatabase.Refresh();
-            }
-#endif
-
-            return references;
         }
     }
 }
