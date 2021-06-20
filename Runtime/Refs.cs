@@ -56,11 +56,13 @@ public struct Refs
     /// </summary>
     public static bool Remove(Reference reference)
     {
-        for (int i = 0; i < Instance.Assets.Count; i++)
+        References instance = Instance;
+        int count = instance.Assets.Count;
+        for (int i = count - 1; i >= 0; i--)
         {
-            if (Instance.Assets[i] == reference)
+            if (instance.Assets[i] == reference)
             {
-                return Instance.Remove(reference.Path);
+                return instance.Remove(reference.Path);
             }
         }
 

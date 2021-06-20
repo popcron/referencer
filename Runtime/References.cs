@@ -25,6 +25,7 @@ namespace Popcron.Referencer
         private Dictionary<string, Reference> nameToItem = null;
         private Dictionary<Object, string> objectToPath = null;
         private ReadOnlyCollection<Reference> assetsReadOnly = null;
+        private HashSet<string> assetPaths = null;
 
         public static References Current
         {
@@ -61,18 +62,32 @@ namespace Popcron.Referencer
             for (int i = 0; i < assets.Count; i++)
             {
                 Reference reference = assets[i];
-                if (reference.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+                if (reference.Path.Equals(path))
                 {
-                    assets.RemoveAt(i);
-                    assetsReadOnly = assets.AsReadOnly();
-
-                    if (objectToPath != null)
-                    {
-                        objectToPath.Remove(reference.Object);
-                    }
-
-                    return true;
+                    return Remove(i);
                 }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Removes a reference instance at this index.
+        /// </summary>
+        public bool Remove(int index)
+        {
+            if (index >= 0 && index < assets.Count)
+            {
+                Reference reference = assets[index];
+                assets.RemoveAt(index);
+                assetsReadOnly = assets.AsReadOnly();
+
+                if (objectToPath != null)
+                {
+                    objectToPath.Remove(reference.Object);
+                }
+
+                return true;
             }
 
             return false;
@@ -89,7 +104,7 @@ namespace Popcron.Referencer
             for (int i = 0; i < assets.Count; i++)
             {
                 Reference reference = assets[i];
-                if (reference.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+                if (reference.Path.Equals(path))
                 {
                     return reference;
                 }
@@ -145,17 +160,23 @@ namespace Popcron.Referencer
             }
 
             path = path.Replace('\\', '/');
-            int count = assets.Count;
-            for (int i = 0; i < count; i++)
+
+            //rebuild path hashset
+            if (assetPaths is null)
             {
-                Reference reference = assets[i];
-                if (reference.Path.Equals(path, StringComparison.OrdinalIgnoreCase))
+                assetPaths = new HashSet<string>();
+                int count = assets.Count;
+                for (int i = 0; i < count; i++)
                 {
-                    return true;
+                    Reference reference = assets[i];
+                    if (!assetPaths.Contains(reference.Path))
+                    {
+                        assetPaths.Add(reference.Path);
+                    }
                 }
             }
 
-            return false;
+            return assetPaths.Contains(path);
         }
 
         /// <summary>
