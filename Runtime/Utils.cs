@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using UnityEngine;
 using Object = UnityEngine.Object;
 using System.Collections.Generic;
@@ -15,61 +14,34 @@ namespace Popcron.Referencer
     /// <summary>
     /// This class relays method class to the Helper class in the editor assembly.
     /// </summary>
-#if UNITY_EDITOR
-    [InitializeOnLoad]
-#endif
     public static class Utils
     {
-        private static Dictionary<string, Type> nameToType = null;
-        private static Type referencesLoaderType = null;
-        private static MethodInfo loadAllMethod = null;
-
-        public static Dictionary<string, Type> NameToType
-        {
-            get
-            {
-                if (nameToType == null)
-                {
-                    Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                    nameToType = new Dictionary<string, Type>();
-                    for (int a = 0; a < assemblies.Length; a++)
-                    {
-                        Assembly assembly = assemblies[a];
-                        Type[] types = assembly.GetTypes();
-                        for (int t = 0; t < types.Length; t++)
-                        {
-                            Type type = types[t];
-                            nameToType[type.FullName] = type;
-                            nameToType[type.Name] = type;
-                        }
-                    }
-                }
-
-                return nameToType;
-            }
-        }
-
-        static Utils()
-        {
-            if (referencesLoaderType is null)
-            {
-                referencesLoaderType = GetType("Popcron.Referencer.ReferencesLoader");
-            }
-
-            if (referencesLoaderType != null)
-            {
-                loadAllMethod = referencesLoaderType.GetMethod("LoadAll");
-            }
-        }
+        private static Dictionary<string, Type> nameToType = new Dictionary<string, Type>();
 
         /// <summary>
         /// Returns the type that this reference is of.
         /// </summary>
-        public static Type GetType(string fullTypeName)
+        public static Type GetType(string assemblyQualifiedName)
         {
-            if (NameToType.TryGetValue(fullTypeName, out Type resultType))
+            if (string.IsNullOrEmpty(assemblyQualifiedName))
+            {
+                return null;
+            }
+
+            if (nameToType.TryGetValue(assemblyQualifiedName, out Type resultType))
             {
                 return resultType;
+            }
+            else
+            {
+                resultType = Type.GetType(assemblyQualifiedName);
+                if (resultType != null)
+                {
+                    nameToType[resultType.AssemblyQualifiedName] = resultType;
+                    nameToType[resultType.FullName] = resultType;
+                    nameToType[resultType.Name] = resultType;
+                    return resultType;
+                }
             }
 
             return null;
@@ -77,14 +49,11 @@ namespace Popcron.Referencer
 
         /// <summary>
         /// Loads all assets into the asset.
-        /// Returns the true reference that was actually loaded into.
         /// </summary>
-        public static References LoadAll()
+        public static void LoadAll()
         {
 #if UNITY_EDITOR
-            return (References)loadAllMethod.Invoke(null, null);
-#else
-            return References.Current;
+            EditorPrefs.SetBool("LoadAllReferences", true);
 #endif
         }
 

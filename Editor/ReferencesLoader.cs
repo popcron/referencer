@@ -38,11 +38,11 @@ namespace Popcron.Referencer
                 {
                     Profiler.BeginSample("Process file system event");
 
-                    #if UNITY_2021_2_OR_NEWER
+#if UNITY_2021_2_OR_NEWER
                     string fullPath = fileEvent.Name;
-                    #else
+#else
                     string fullPath = fileEvent.FullPath;
-                    #endif
+#endif
 
                     string assetPath = fullPath.Replace(".meta", "");
                     assetPath = assetPath.Replace("\\", "/");
@@ -60,6 +60,12 @@ namespace Popcron.Referencer
 
                     Profiler.EndSample();
                 }
+            }
+
+            if (EditorPrefs.GetBool("LoadAllReferences"))
+            {
+                EditorPrefs.SetBool("LoadAllReferences", false);
+                LoadAll();
             }
 
             if (hasChanged)

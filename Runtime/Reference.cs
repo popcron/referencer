@@ -14,7 +14,7 @@ namespace Popcron.Referencer
         private Object unityObject;
 
         [SerializeField]
-        private string typeName;
+        private string assemblyQualifiedName;
 
         [NonSerialized]
         private Type systemType;
@@ -35,7 +35,7 @@ namespace Popcron.Referencer
             get
             {
                 //null type name is null cached type
-                if (string.IsNullOrEmpty(typeName))
+                if (string.IsNullOrEmpty(assemblyQualifiedName))
                 {
                     systemType = null;
                     return null;
@@ -43,7 +43,7 @@ namespace Popcron.Referencer
 
                 if (systemType == null)
                 {
-                    systemType = Utils.GetType(typeName);
+                    systemType = Utils.GetType(assemblyQualifiedName);
                 }
 
                 return systemType;
@@ -99,7 +99,7 @@ namespace Popcron.Referencer
             }
 
             this.unityObject = unityObject;
-            this.typeName = type.FullName;
+            this.assemblyQualifiedName = type.AssemblyQualifiedName;
             this.systemType = type;
             UpdateKey();
         }
@@ -136,7 +136,7 @@ namespace Popcron.Referencer
         {
             if (unityObject)
             {
-                key = $"{typeName}:{unityObject.name}";
+                key = $"{assemblyQualifiedName}:{unityObject.name}";
             }
         }
     }

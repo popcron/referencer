@@ -301,7 +301,7 @@ namespace Popcron.Referencer
                 }
                 else
                 {
-                    key = $"{type.FullName}:{name}";
+                    key = $"{type.AssemblyQualifiedName}:{name}";
                 }
 
                 if (nameToItem.TryGetValue(key, out Reference item))
