@@ -1,4 +1,5 @@
-﻿using Popcron.Referencer;
+﻿#if UNITY_EDITOR
+using Popcron.Referencer;
 using UnityEditor;
 using UnityEngine;
 
@@ -40,3 +41,4 @@ namespace Popcron.References
         }
     }
 }
+#endif

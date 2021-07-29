@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor;
 
 namespace Popcron.Referencer
 {
@@ -32,12 +31,12 @@ namespace Popcron.Referencer
         {
             get
             {
-                if (allLoaders is null)
+                if (allLoaders is null || allLoaders.Count == 0)
                 {
                     allLoaders = new List<AssetLoader>();
-
+#if UNITY_EDITOR
 #if UNITY_2019_2_OR_NEWER
-                    TypeCache.TypeCollection assetLoaderTypes = TypeCache.GetTypesDerivedFrom<AssetLoader>();
+                    UnityEditor.TypeCache.TypeCollection assetLoaderTypes = UnityEditor.TypeCache.GetTypesDerivedFrom<AssetLoader>();
                     foreach (Type type in assetLoaderTypes)
                     {
                         if (!type.IsAbstract)
@@ -56,6 +55,7 @@ namespace Popcron.Referencer
                             allLoaders.Add(newLoader);
                         }
                     }
+#endif
 #endif
                 }
 

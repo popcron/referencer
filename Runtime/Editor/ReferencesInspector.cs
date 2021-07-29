@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if UNITY_EDITOR
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -23,6 +24,14 @@ namespace Popcron.Referencer
         private void OnEnable()
         {
             Search(SearchQuery);
+        }
+
+        private static Rect GUIToScreenRect(Rect guiRect)
+        {
+            Vector2 screenPoint = GUIUtility.GUIToScreenPoint(new Vector2(guiRect.x, guiRect.y));
+            guiRect.x = screenPoint.x;
+            guiRect.y = screenPoint.y;
+            return guiRect;
         }
 
         public override void OnInspectorGUI()
@@ -68,7 +77,7 @@ namespace Popcron.Referencer
 
                     //draw each element
                     Rect rect = EditorGUILayout.GetControlRect(true, lineHeight);
-                    float y = GUIUtility.GUIToScreenRect(rect).y;
+                    float y = GUIToScreenRect(rect).y;
                     if (rect.y > 0 && y > 0 && y < Screen.height)
                     {
                         if (e.type == EventType.MouseDown && e.button == 0 && rect.Contains(e.mousePosition))
@@ -193,3 +202,4 @@ namespace Popcron.Referencer
         }
     }
 }
+#endif

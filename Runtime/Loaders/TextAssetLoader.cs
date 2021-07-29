@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine.AI;
+using UnityEngine;
 
 namespace Popcron.Referencer
 {
-    public class NavMeshDataLoader : AssetLoader
+    public class TextAssetLoader : AssetLoader
     {
-        public override Type Type => typeof(NavMeshData);
+        public override Type Type => typeof(TextAsset);
 
         public override List<Reference> LoadAll(Settings settings)
         {
@@ -23,6 +23,14 @@ namespace Popcron.Referencer
         public override List<Reference> Load(string path)
         {
             UnityEngine.Object prefab = Loader.LoadAssetAtPath(path, Type);
+
+#if UNITY_EDITOR
+            if (prefab is UnityEditorInternal.AssemblyDefinitionAsset)
+            {
+                return new List<Reference>();
+            }
+#endif
+
             Reference item = new Reference(prefab, Type, path);
             return new List<Reference>() { item };
         }

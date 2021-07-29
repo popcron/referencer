@@ -4,6 +4,7 @@ using Object = UnityEngine.Object;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 #if UNITY_EDITOR
 using UnityEditor;
@@ -17,6 +18,30 @@ namespace Popcron.Referencer
     public static class Utils
     {
         private static Dictionary<string, Type> nameToType = new Dictionary<string, Type>();
+
+        public static Dictionary<string, Type> NameToType
+        {
+            get
+            {
+                if (nameToType is null || nameToType.Count == 0)
+                {
+                    Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                    int assemblyCount = assemblies.Length;
+                    for (int i = assemblyCount - 1; i >= 0; i--)
+                    {
+                        Type[] types = assemblies[i].GetTypes();
+                        int typeCount = types.Length;
+                        for (int j = 0; j < typeCount; j++)
+                        {
+                            Type type = types[j];
+                            CacheType(type);
+                        }
+                    }
+                }
+
+                return nameToType;
+            }
+        }
 
         /// <summary>
         /// Returns the type that this reference is of.
@@ -37,14 +62,19 @@ namespace Popcron.Referencer
                 resultType = Type.GetType(assemblyQualifiedName);
                 if (resultType != null)
                 {
-                    nameToType[resultType.AssemblyQualifiedName] = resultType;
-                    nameToType[resultType.FullName] = resultType;
-                    nameToType[resultType.Name] = resultType;
+                    CacheType(resultType);
                     return resultType;
                 }
             }
 
             return null;
+        }
+
+        private static void CacheType(Type type)
+        {
+            nameToType[type.AssemblyQualifiedName] = type;
+            nameToType[type.FullName] = type;
+            nameToType[type.Name] = type;
         }
 
         /// <summary>
